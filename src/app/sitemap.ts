@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 import { db } from '@/lib/firebaseConfig'
 import { collection, getDocs } from 'firebase/firestore'
 
-const BASE_URL = 'https://novelhub.com'
+const BASE_URL = 'https://novellize.com'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static routes

@@ -864,6 +864,20 @@ export default function NovelPageClient({ params }: { params: { novelId: string 
                 </div>
               )}
 
+              {/* Uploader Info */}
+              <div 
+                className="flex items-center gap-2 mb-4 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => router.push(`/author/${novel.uploader}`)}
+              >
+                <Avatar className="h-6 w-6">
+                  <AvatarFallback>{uploaderUsername.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <span className="text-gray-600 dark:text-gray-300 font-medium">Uploaded by {uploaderUsername}</span>
+                <Badge variant="outline" className="px-1 py-0 text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                  Uploader
+                </Badge>
+              </div>
+
               {/* Genres and Tags Section */}
               <div className="space-y-4 mb-6">
                 {/* Genres */}

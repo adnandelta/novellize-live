@@ -586,41 +586,118 @@ export default function ModernLightNovelsHomepage() {
                       <AvatarFallback>{userProfile?.username?.charAt(0)}</AvatarFallback>
                     </Avatar>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{userProfile?.username}</p>
-                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                  <DropdownMenuContent className="w-64 p-0 bg-[#1E1E24] border-[#2A2A30] text-white shadow-xl" align="end">
+                    {/* User Header Section */}
+                    <div className="p-4 bg-[#1E1E24]">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-14 w-14 border-2 border-[#F1592A]">
+                          <AvatarImage src={userProfile?.profilePicture} alt={userProfile?.username} />
+                          <AvatarFallback className="bg-[#2A2A30] text-[#F1592A]">{userProfile?.username?.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-base font-semibold">{userProfile?.username || "Username"}</p>
+                            {userType === 'admin' && (
+                              <span className="bg-blue-500 text-xs px-1.5 py-0.5 rounded text-white">A</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-400">{user.email}</p>
+                          
+                          {/* Points Display - Removed coin icon, kept only heart */}
+                          <div className="flex items-center mt-1">
+                            <div className="flex items-center gap-1">
+                              <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+                                <span className="text-xs">♥</span>
+                              </div>
+                              <span className="text-sm">1</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => router.push('/user_profile')}>
-                      <User className="mr-2 h-4 w-4" />
-                      <span>My Profile</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    {userType === 'admin' && (
-                      <>
-                        <DropdownMenuItem onClick={() => router.push('/admin')}>
-                          <ChevronsLeftRight className="mr-2 h-4 w-4" />
-                          <span>Admin Console</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                      </>
-                    )}
-                    {userType === 'author' && (
-                      <>
-                        <DropdownMenuItem onClick={() => router.push('/admin')}>
-                          <ChevronsLeftRight className="mr-2 h-4 w-4" />
-                          <span>Author Console</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                      </>
-                    )}
-                    <DropdownMenuItem onClick={handleLogout}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </DropdownMenuItem>
+                      
+                      {/* Get More Button - Removed */}
+                      
+                    </div>
+                    
+                    {/* Membership Banner - changed to Welcome Message */}
+                    <div className="mx-3 my-3 bg-[#2A2A30] rounded-lg overflow-hidden">
+                      <div className="p-3 relative">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h3 className="text-sm font-medium">Welcome to Novellize!</h3>
+                            <p className="text-xs text-gray-400">Your home for web novels</p>
+                          </div>
+                          <Button 
+                            className="bg-[#F1592A] hover:bg-[#E44D1F] text-white text-xs rounded-md px-3 h-7"
+                            onClick={() => router.push('/browse')}
+                          >
+                            EXPLORE
+                          </Button>
+                        </div>
+                        
+                        {/* Background Icon */}
+                        <div className="absolute right-2 bottom-0 opacity-20">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Menu Items */}
+                    <div className="px-1 py-2">
+                      <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={() => router.push('/user_profile')}>
+                        <User className="mr-2 h-4 w-4" />
+                        <span>My Profile</span>
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={() => router.push('/browse')}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="m21 21-6-6m6 6v-4.8m0 4.8h-4.8" />
+                          <path d="M3 16.2V21m0-4.8V21h4.8" />
+                          <path d="M21 7.8V3m0 4.8V3h-4.8" />
+                          <path d="M3 7.8V3m0 4.8V3h4.8" />
+                        </svg>
+                        <span>Browse All</span>
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5C2 7 4 5 6.5 5H18c2.2 0 4 1.8 4 4v8Z" />
+                          <polyline points="15,9 18,9 18,11" />
+                          <path d="M6.5 5C9 5 11 7 11 9.5V17a2 2 0 0 1-2 2v0" />
+                          <line x1="6" y1="10" x2="7" y2="10" />
+                        </svg>
+                        <span>Inbox</span>
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuSeparator className="bg-[#2A2A30]" />
+                      
+                      {userType === 'admin' && (
+                        <>
+                          <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={() => router.push('/admin')}>
+                            <ChevronsLeftRight className="mr-2 h-4 w-4" />
+                            <span>Admin Console</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator className="bg-[#2A2A30]" />
+                        </>
+                      )}
+                      
+                      {userType === 'author' && (
+                        <>
+                          <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={() => router.push('/admin')}>
+                            <ChevronsLeftRight className="mr-2 h-4 w-4" />
+                            <span>Author Console</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator className="bg-[#2A2A30]" />
+                        </>
+                      )}
+                      
+                      <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Sign Out</span>
+                      </DropdownMenuItem>
+                    </div>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
@@ -742,6 +819,102 @@ export default function ModernLightNovelsHomepage() {
                 <p className="text-sm sm:text-base md:text-lg dark:text-[#E7E7E8] text-[#232120] text-center md:text-left">
                   As a dedicated repository, we aim to connect readers and writers by providing a platform that celebrates creativity, storytelling, and imagination.
                 </p>
+
+                {/* CTA Buttons Container - Responsive Layout */}
+                <div className="flex flex-col w-full gap-4 pt-4">
+                  {/* Desktop Buttons */}
+                  <div className="hidden md:flex items-center gap-4">
+                    {/* Forum Button */}
+                    <Link 
+                      href="/forum"
+                      className="group flex items-center gap-2 px-5 py-2.5 bg-[#F1592A] 
+                        rounded-full text-white text-sm font-medium
+                        hover:bg-[#e44d1f] transition-all duration-300">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                      </svg>
+                      Forum
+                    </Link>
+
+                    {/* Author Access Button */}
+                    <button 
+                      onClick={() => {
+                        const authorSection = document.getElementById('author-request-section');
+                        if (authorSection) {
+                          authorSection.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }}
+                      className="group flex items-center gap-2 px-5 py-2.5 
+                        bg-transparent border border-[#232120] dark:border-[#E7E7E8]
+                        rounded-full text-[#232120] dark:text-[#E7E7E8] text-sm font-medium
+                        hover:bg-[#232120] hover:text-white dark:hover:bg-[#E7E7E8] dark:hover:text-[#232120] 
+                        transition-all duration-300">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Author Access
+                    </button>
+
+                    {/* Browse Button with Expansion */}
+                    <Link 
+                      href="/browse"
+                      className="group relative flex items-center justify-center w-10 h-10 
+                        bg-[#232120] dark:bg-[#E7E7E8] rounded-full
+                        hover:w-32 transition-all duration-300 overflow-hidden">
+                      <span className="absolute left-3 flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white dark:text-[#232120]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </span>
+                      <span className="absolute left-10 text-sm font-medium text-white dark:text-[#232120] 
+                        opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                        Browse All
+                      </span>
+                    </Link>
+                  </div>
+
+                  {/* Mobile Buttons */}
+                  <div className="flex flex-col md:hidden gap-3">
+                    <Link 
+                      href="/forum"
+                      className="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-[#F1592A] 
+                        rounded-full text-white text-sm font-medium
+                        hover:bg-[#e44d1f] transition-all duration-300">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                      </svg>
+                      Forum
+                    </Link>
+                    <button 
+                      onClick={() => {
+                        const authorSection = document.getElementById('author-request-section');
+                        if (authorSection) {
+                          authorSection.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }}
+                      className="w-full flex items-center justify-center gap-2 px-5 py-2.5 
+                        bg-transparent border border-[#232120] dark:border-[#E7E7E8]
+                        rounded-full text-[#232120] dark:text-[#E7E7E8] text-sm font-medium
+                        hover:bg-[#232120] hover:text-white dark:hover:bg-[#E7E7E8] dark:hover:text-[#232120] 
+                        transition-all duration-300">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Author Access
+                    </button>
+                    <Link 
+                      href="/browse"
+                      className="w-full flex items-center justify-center gap-2 px-5 py-2.5 
+                        bg-[#232120] dark:bg-[#E7E7E8] 
+                        rounded-full text-white dark:text-[#232120] text-sm font-medium
+                        hover:opacity-90 transition-all duration-300">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                      Browse All
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -804,7 +977,8 @@ export default function ModernLightNovelsHomepage() {
         </section>
 
         {/* Author Request Section */}
-        <AuthorRequestSection />
+        <section id="author-request-section">   <AuthorRequestSection /></section>
+     
 
         {/* FAQ Section */}
         <FAQSection />

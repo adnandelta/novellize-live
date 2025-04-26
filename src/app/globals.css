@@ -277,3 +277,83 @@ body.dark .text-gray-600 {
 .animate-subtle-scale {
   animation: subtle-scale 1.5s ease-in-out infinite;
 }
+
+/* Gradient animation utilities */
+.bg-size-200 {
+  background-size: 200% 200%;
+}
+
+.animate-gradient-x {
+  animation: gradient-x 5s ease infinite;
+}
+
+@keyframes gradient-x {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Genre card hover effects */
+.genre-card-container {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.genre-card-container:hover {
+  z-index: 10;
+}
+
+/* Cool underline effect */
+.cool-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.cool-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #F1592A, #FF8C94, #F1592A);
+  background-size: 200% 200%;
+  animation: gradient-x 3s ease infinite;
+  border-radius: 3px;
+}
+
+/* Floating animation */
+.floating {
+  animation: floating 4s ease-in-out infinite;
+}
+
+@keyframes floating {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(90deg, #F1592A, #FF8C94, #F1592A);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  background-size: 200% auto;
+  animation: gradient-text 4s linear infinite;
+}
+
+@keyframes gradient-text {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
