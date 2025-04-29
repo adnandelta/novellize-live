@@ -28,6 +28,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from './authcontext'
 import { signOut } from 'firebase/auth'
 import { auth, db } from '@/lib/firebaseConfig'
+import { getAnalytics, logEvent } from 'firebase/analytics'
 import { collection, query, orderBy, limit, getDocs, doc, getDoc, where, updateDoc, arrayRemove, arrayUnion } from 'firebase/firestore'
 import { useRouter } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -52,6 +53,14 @@ import InitialLoader from '@/components/InitialLoader'
 import { AuthorRequestSection } from '@/components/AuthorRequestSection'
 import { FAQSection } from '@/components/FAQSection'
 import { Toaster } from 'sonner'
+import { 
+  trackPageView, 
+  trackSectionView, 
+  trackNovelInteraction, 
+  trackUserAction, 
+  trackThemeChange, 
+  trackNavigation 
+} from '@/lib/analytics'
 
 
 interface Novel {
@@ -222,6 +231,18 @@ export default function ModernLightNovelsHomepage() {
   const [activeSection, setActiveSection] = useState('');
 
   useEffect(() => {
+    // Track page view when component mounts
+    trackPageView('Home');
+  }, []);
+
+  // Track section views
+  useEffect(() => {
+    if (activeSection) {
+      trackSectionView(activeSection);
+    }
+  }, [activeSection]);
+
+  useEffect(() => {
     const handleScroll = () => {
       const sections = ['trending', 'latest', 'popular'];
       const scrollPosition = window.scrollY + 100; // offset for header
@@ -259,6 +280,9 @@ export default function ModernLightNovelsHomepage() {
         top: offsetPosition,
         behavior: "smooth"
       });
+
+      // Track navigation event
+      trackNavigation(id);
     }
   };
 
@@ -327,7 +351,9 @@ export default function ModernLightNovelsHomepage() {
   }, [popularNovels]);
 
   const toggleDarkMode = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark')
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    trackThemeChange(newTheme);
   }
 
   const fetchUserProfile = async () => {
@@ -381,6 +407,7 @@ export default function ModernLightNovelsHomepage() {
 
   const handleLogout = async () => {
     try {
+      trackUserAction('logout');
       await signOut(auth)
       window.location.href = '/'
     } catch (error) {
@@ -451,11 +478,13 @@ export default function ModernLightNovelsHomepage() {
       await updateDoc(userRef, {
         followedNovels: arrayRemove(novelId)
       });
+      trackNovelInteraction('unfollow', novelId);
     } else {
       // Follow
       await updateDoc(userRef, {
         followedNovels: arrayUnion(novelId)
       });
+      trackNovelInteraction('follow', novelId);
     }
     
     // Update local state
@@ -485,6 +514,11 @@ export default function ModernLightNovelsHomepage() {
         <span className={`${isActive ? 'font-medium' : ''} text-base sm:text-sm`}>{label}</span>
       </button>
     );
+  };
+
+  // Track novel clicks
+  const trackNovelClick = (novelId: string, title: string) => {
+    trackNovelInteraction('click', novelId, title);
   };
 
   return (
@@ -544,6 +578,15 @@ export default function ModernLightNovelsHomepage() {
                   type="text"
                   placeholder="Search novels..."
                   className="pl-10 pr-4 py-2 w-full bg-white dark:bg-[#2A2827] border-[#F1592A] border-opacity-50 rounded-full focus-visible:ring-[#F1592A]"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      const searchTerm = (e.target as HTMLInputElement).value;
+                      // Perform search or redirect to search page
+                      router.push(`/browse?search=${encodeURIComponent(searchTerm)}`);
+                      // Track search
+                      trackUserAction('search', { search_term: searchTerm });
+                    }
+                  }}
                 />
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               </div>
@@ -732,6 +775,16 @@ export default function ModernLightNovelsHomepage() {
                     type="text"
                     placeholder="Search novels..."
                     className="pl-10 pr-4 py-2.5 w-full bg-white dark:bg-[#2A2827] border-[#F1592A] border-opacity-50 rounded-full focus-visible:ring-[#F1592A]"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        const searchTerm = (e.target as HTMLInputElement).value;
+                        // Perform search or redirect to search page
+                        router.push(`/browse?search=${encodeURIComponent(searchTerm)}`);
+                        // Track search and close mobile menu
+                        trackUserAction('search', { search_term: searchTerm });
+                        setIsMobileMenuOpen(false);
+                      }
+                    }}
                   />
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 </div>

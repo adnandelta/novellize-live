@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Search, Moon, Sun, LogOut, User, Home, MessageSquare, ChevronDown, ChevronUp, ChevronLeft } from "lucide-react"
+import { Search, Moon, Sun, LogOut, User, Home, MessageSquare, ChevronDown, ChevronUp, ChevronLeft, ChevronsLeftRight, Flame, BookOpen, Crown, Sparkles, Menu, X, Library } from "lucide-react"
 import Link from "next/link"
 import Image from 'next/image'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/app/authcontext'
 import { signOut } from 'firebase/auth'
 import { auth, db} from '@/lib/firebaseConfig'
@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import ReactMarkdown from 'react-markdown'
 import remarkBreaks from 'remark-breaks'
+import { Badge } from "@/components/ui/badge"
 
 interface Reply {
   id: string
@@ -50,6 +51,45 @@ interface ForumPost {
   image?: string
 }
 
+const styles = `
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+      transform: translate(30px, -50px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
+  }
+  
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+  
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+  
+  .animation-delay-6000 {
+    animation-delay: 6s;
+  }
+`;
+
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = styles;
+  document.head.appendChild(styleSheet);
+}
+
 const ThemeToggle = () => {
   const { theme, setTheme } = useTheme()
 
@@ -69,6 +109,32 @@ const ThemeToggle = () => {
   )
 }
 
+const AnimatedPattern = () => (
+  <div className="absolute inset-0 -z-10 overflow-hidden">
+    <svg className="absolute w-full h-full opacity-[0.03] dark:opacity-[0.02]" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="smallGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" strokeWidth="0.5" />
+        </pattern>
+        <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+          <rect width="100" height="100" fill="url(#smallGrid)" />
+          <path d="M 100 0 L 0 0 0 100" fill="none" stroke="currentColor" strokeWidth="1" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid)" />
+    </svg>
+    
+    <div className="absolute top-0 left-0 w-full h-full">
+      <div className="absolute w-[500px] h-[500px] -left-48 -top-48 bg-[#F1592A]/10 rounded-full 
+        blur-[100px] animate-blob animation-delay-2000" />
+      <div className="absolute w-[500px] h-[500px] -right-48 -bottom-48 bg-[#D14820]/10 rounded-full 
+        blur-[100px] animate-blob animation-delay-4000" />
+      <div className="absolute w-[500px] h-[500px] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
+        bg-[#F1592A]/5 rounded-full blur-[100px] animate-blob animation-delay-6000" />
+    </div>
+  </div>
+);
+
 const ReplyComponent = ({ reply, allReplies, onReply, userProfiles }: { reply: Reply, allReplies: Reply[], onReply: (parentReplyId: string, content: string) => void, userProfiles: {[key: string]: {profilePicture: string, username: string}} }) => {
   const [isReplying, setIsReplying] = useState(false)
   const [replyContent, setReplyContent] = useState('')
@@ -76,6 +142,7 @@ const ReplyComponent = ({ reply, allReplies, onReply, userProfiles }: { reply: R
   const { user } = useAuth()
 
   const nestedReplies = allReplies.filter(r => r.parentId === reply.id)
+  const userProfile = userProfiles[reply.authorId] || { profilePicture: '/assets/default-avatar.png', username: reply.author }
 
   const handleReply = () => {
     if (!user) {
@@ -102,80 +169,162 @@ const ReplyComponent = ({ reply, allReplies, onReply, userProfiles }: { reply: R
     }
   }
 
-  const userProfile = userProfiles[reply.authorId] || { profilePicture: '/assets/default-avatar.png', username: reply.author }
-
   return (
-    <div className="mt-4">
-      <div className="flex items-start space-x-4">
-        <Avatar className="w-10 h-10 flex-shrink-0">
-          <AvatarImage src={userProfile.profilePicture} alt={userProfile.username} />
-          <AvatarFallback>{userProfile.username[0].toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <div className="flex-grow overflow-hidden">
-          <div className="flex items-center space-x-2">
-            <span className="font-semibold text-[#232120] dark:text-[#E7E7E8]">{userProfile.username}</span>
-            <span className="text-xs text-[#3E3F3E] dark:text-[#C3C3C3]">{reply.createdAt.toLocaleString()}</span>
-          </div>
-          <ReactMarkdown 
-            className="mt-1 text-[#232120] dark:text-[#E7E7E8] prose dark:prose-invert max-w-none break-words whitespace-pre-wrap"
-            remarkPlugins={[remarkBreaks]}
-          >
-            {reply.content}
-          </ReactMarkdown>
-          {reply.image && (
-            <div className="mt-2">
-              <Image src={reply.image} alt="Reply image" width={200} height={200} className="rounded-md" />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      className="mt-4 sm:mt-6 first:mt-0"
+    >
+      <div className="group relative overflow-hidden rounded-xl backdrop-blur-xl 
+        bg-gradient-to-r from-white/5 to-white/10 dark:from-black/5 dark:to-black/10
+        hover:from-white/10 hover:to-white/15 dark:hover:from-black/10 dark:hover:to-black/15
+        transition-all duration-300 ease-in-out"
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-[#F1592A]/5 to-transparent opacity-0 
+          group-hover:opacity-100 transition-opacity duration-300" />
+        
+        <div className="relative z-10 p-3 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-6">
+            <div className="flex sm:flex-col items-center space-y-0 sm:space-y-2 gap-3 sm:gap-0">
+              <Avatar className="h-12 w-12 sm:h-14 sm:w-14 ring-2 ring-[#F1592A]/20 rounded-full">
+                <AvatarImage src={userProfile.profilePicture} alt={userProfile.username} />
+                <AvatarFallback>{userProfile.username[0]}</AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col items-start sm:items-center text-left sm:text-center">
+                <span className="text-sm font-medium text-[#232120] dark:text-[#E7E7E8]">{userProfile.username}</span>
+                <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
+                  {reply.createdAt.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </span>
+                <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
+                  {reply.createdAt.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </span>
+              </div>
             </div>
-          )}
-          <div className="flex items-center space-x-4 mt-2">
-            <Button variant="ghost" size="sm" className="text-[#3E3F3E] dark:text-[#C3C3C3] hover:text-[#232120] dark:hover:text-[#E7E7E8]" onClick={() => setIsReplying(!isReplying)}>
-              <MessageSquare className="h-4 w-4 mr-1" />
-              Reply
-            </Button>
+            
+            <div className="flex-1 min-w-0 w-full">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="prose dark:prose-invert max-w-none">
+                    <ReactMarkdown 
+                      className="text-[#232120] dark:text-[#E7E7E8] text-base leading-relaxed"
+                      remarkPlugins={[remarkBreaks]}
+                    >
+                      {reply.content}
+                    </ReactMarkdown>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-6 mt-4 sm:mt-6">
+                    <div className="flex-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-[#8E8F8E] dark:text-[#C3C3C3] hover:text-[#F1592A] hover:bg-[#F1592A]/10
+                              transition-colors duration-200 flex items-center" 
+                            onClick={() => setIsReplying(!isReplying)}
+                          >
+                            <MessageSquare className="h-4 w-4 mr-1" />
+                            Reply
+                          </Button>
+                          {nestedReplies.length > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setShowReplies(!showReplies)}
+                              className="text-[#8E8F8E] dark:text-[#C3C3C3] hover:text-[#F1592A] hover:bg-[#F1592A]/10
+                                transition-colors duration-200 flex items-center"
+                            >
+                              {showReplies ? <ChevronUp className="mr-2 h-4 w-4" /> : <ChevronDown className="mr-2 h-4 w-4" />}
+                              {showReplies ? 'Hide Replies' : `Show Replies (${nestedReplies.length})`}
+                            </Button>
+                          )}
+                        </div>
+                        <div className="text-[#8E8F8E] dark:text-[#C3C3C3] text-sm">
+                          {Math.ceil(reply.content.length / 200)} min read
+                        </div>
+                      </div>
+                    </div>
+
+                    {reply.image && (
+                      <div className="relative h-36 w-full sm:w-48 max-w-[300px] flex-shrink-0 overflow-hidden rounded-lg mx-auto sm:mx-0">
+                        <Image 
+                          src={reply.image} 
+                          alt="Reply image" 
+                          fill
+                          className="object-cover transform group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {isReplying && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="mt-4 sm:mt-6"
+                >
+                  <Card className="bg-[#F8F8F8]/50 dark:bg-[#1A1918]/50 border-none">
+                    <CardContent className="p-3 sm:p-4">
+                      <Textarea
+                        value={replyContent}
+                        onChange={(e) => setReplyContent(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Write your reply... (Press Enter to submit, Ctrl+Enter for new line)"
+                        className="w-full bg-white/50 dark:bg-black/50 border border-white/20 dark:border-white/10 
+                          backdrop-blur-sm focus:ring-2 focus:ring-[#F1592A]/50 focus:border-transparent
+                          text-[#232120] dark:text-[#E7E7E8] placeholder-[#8E8F8E] dark:placeholder-[#C3C3C3]"
+                      />
+                      <Button 
+                        onClick={handleReply} 
+                        className="mt-3 w-full sm:w-auto bg-gradient-to-r from-[#F1592A] to-[#D14820] text-white 
+                          hover:from-[#D14820] hover:to-[#F1592A] transition-all duration-300"
+                      >
+                        Submit Reply
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-      {isReplying && (
-        <div className="mt-2 ml-14">
-          <Textarea
-            value={replyContent}
-            onChange={(e) => setReplyContent(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Write your reply... (Press Enter to submit, Ctrl+Enter for new line)"
-            className="w-full bg-[#E7E7E8] dark:bg-[#3E3F3E] text-[#232120] dark:text-[#E7E7E8] border-[#C3C3C3] dark:border-[#3E3F3E]"
-          />
-          <Button onClick={handleReply} className="mt-2 bg-[#F1592A] text-[#E7E7E8] hover:bg-[#D14820]">
-            Submit Reply
-          </Button>
-        </div>
-      )}
-      {nestedReplies.length > 0 && (
-        <div className="mt-2 ml-14">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowReplies(!showReplies)}
-            className="text-[#3E3F3E] dark:text-[#C3C3C3] hover:text-[#232120] dark:hover:text-[#E7E7E8]"
+
+      <AnimatePresence>
+        {showReplies && nestedReplies.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="ml-3 sm:ml-12 mt-3 sm:mt-4 space-y-3 sm:space-y-4 pl-3 sm:pl-6 border-l-2 border-[#F1592A]/20"
           >
-            {showReplies ? <ChevronUp className="mr-2 h-4 w-4" /> : <ChevronDown className="mr-2 h-4 w-4" />}
-            {showReplies ? 'Hide Replies' : `Show Replies (${nestedReplies.length})`}
-          </Button>
-          {showReplies && (
-            <div className="mt-2">
-              {nestedReplies.map((nestedReply) => (
-                <ReplyComponent
-                  key={nestedReply.id}
-                  reply={nestedReply}
-                  allReplies={allReplies}
-                  onReply={onReply}
-                  userProfiles={userProfiles}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+            {nestedReplies.map((nestedReply) => (
+              <ReplyComponent
+                key={nestedReply.id}
+                reply={nestedReply}
+                allReplies={allReplies}
+                onReply={onReply}
+                userProfiles={userProfiles}
+              />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   )
 }
 
@@ -193,6 +342,7 @@ export default function PostPage({ params }: { params: { postId: string } }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [allReplies, setAllReplies] = useState<Reply[]>([])
   const [userProfiles, setUserProfiles] = useState<{[key: string]: {profilePicture: string, username: string}}>({})
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   
 
@@ -376,160 +526,342 @@ export default function PostPage({ params }: { params: { postId: string } }) {
   if (!mounted) return null
 
   return (
-    <div className="min-h-screen bg-[#E7E7E8] dark:bg-[#232120] text-[#232120] dark:text-[#E7E7E8]">
+    <div className="relative isolate min-h-screen bg-gradient-to-b from-[#F8F8F8] to-white 
+      dark:from-[#1A1918] dark:to-[#232120] text-[#232120] dark:text-[#E7E7E8]">
       <Toaster position="top-center" reverseOrder={false} />
+      <AnimatedPattern />
+      
       <motion.div 
         className="flex flex-col min-h-screen"
         initial="hidden"
         animate="visible"
         variants={fadeIn}
       >
-        <header className="border-b border-[#C3C3C3] dark:border-[#3E3F3E] bg-[#E7E7E8] dark:bg-[#232120] sticky top-0 z-10 shadow-sm">
-          <div className="container mx-auto px-4 py-6 flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link href="/forum" className="text-3xl font-bold text-[#232120] dark:text-[#E7E7E8] hover:text-[#F1592A] dark:hover:text-[#F1592A] transition-colors">
-                Novellize Forums
-              </Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#232120]/50 dark:text-[#E7E7E8]/50"/>
-                <Input
-                  type="search"
-                  placeholder="Search forums..."
-                  className="pl-10 pr-4 py-2 w-64 rounded-full bg-[#C3C3C3] dark:bg-[#3E3F3E] focus:outline-none focus:ring-2 focus:ring-[#F1592A] text-[#232120] dark:text-[#E7E7E8] placeholder-[#8E8F8E]"
-                />
+        <header className="border-b dark:border-[#3E3F3E] bg-[#E7E7E8] dark:bg-[#232120] sticky top-0 z-50 shadow-sm">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center gap-8">
+                <Link href="/" className="flex-shrink-0">
+                  <Image
+                    src="/assets/favicon.png"
+                    alt="Novellize"
+                    width={40}
+                    height={40}
+                    className="hover:opacity-90 transition-opacity"
+                  />
+                </Link>
+
+                <nav className="hidden lg:flex items-center space-x-2">
+                  <Link href="/">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-[#232120] dark:text-[#E7E7E8] hover:bg-[#F1592A]/10 hover:text-[#F1592A] rounded-full"
+                    >
+                      <Home className="h-4 w-4 mr-2" />
+                      Home
+                    </Button>
+                  </Link>
+                  <Link href="/forum">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-[#232120] dark:text-[#E7E7E8] hover:bg-[#F1592A]/10 hover:text-[#F1592A] rounded-full bg-[#F1592A]/10 text-[#F1592A]"
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Forum
+                    </Button>
+                  </Link>
+                  <Link href="/browse">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-[#232120] dark:text-[#E7E7E8] hover:bg-[#F1592A]/10 hover:text-[#F1592A] rounded-full"
+                    >
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      Browse
+                    </Button>
+                  </Link>
+                </nav>
               </div>
-              <Link href="/forum" passHref>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="w-10 h-10 rounded-full border-2 border-[#F1592A] border-opacity-50 bg-[#E7E7E8] dark:bg-[#232120] hover:bg-[#F1592A] group"
-                >
-                  <Home className="h-4 w-4 text-[#232120] dark:text-[#E7E7E8] group-hover:text-white" />
-                  <span className="sr-only">Forums</span>
-                </Button>
-              </Link>
-              {mounted && <ThemeToggle />}
-              {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+
+              <div className="flex items-center gap-4">
+                <div className="hidden lg:flex relative w-[300px]">
+                  <Input
+                    type="text"
+                    placeholder="Search forum..."
+                    className="pl-10 pr-4 py-2 w-full bg-white dark:bg-[#2A2827] border-[#F1592A] border-opacity-50 rounded-full focus-visible:ring-[#F1592A]"
+                  />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                </div>
+
+                <ThemeToggle />
+
+                {user ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger>
                       <Avatar>
-                        <AvatarImage src={userProfile?.profilePicture} alt="User avatar" />
+                        <AvatarImage src={userProfile?.profilePicture} alt={userProfile?.username} />
                         <AvatarFallback>{userProfile?.username?.[0] || '?'}</AvatarFallback>
                       </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{userProfile?.username}</p>
-                        <p className="text-xs leading-none text-[#C3C3C3]">{user.email}</p>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-64 p-0 bg-[#1E1E24] border-[#2A2A30] text-white shadow-xl" align="end">
+                      <div className="p-4 bg-[#1E1E24]">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-14 w-14 border-2 border-[#F1592A]">
+                            <AvatarImage src={userProfile?.profilePicture} alt={userProfile?.username} />
+                            <AvatarFallback className="bg-[#2A2A30] text-[#F1592A]">{userProfile?.username?.[0] || '?'}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="text-base font-semibold">{userProfile?.username || "Username"}</p>
+                            <p className="text-xs text-gray-400">{user.email}</p>
+                          </div>
+                        </div>
                       </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => router.push('/user_profile')}>
-                      <User className="mr-2 h-4 w-4" />
-                      <span>My Profile</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button variant="ghost" onClick={() => router.push('/auth')} className="text-[#F1592A]">Login</Button>
-              )}
+                      
+                      <div className="mx-3 my-3 bg-[#2A2A30] rounded-lg overflow-hidden">
+                        <div className="p-3 relative">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h3 className="text-sm font-medium">Welcome to Forum!</h3>
+                              <p className="text-xs text-gray-400">Join the discussion</p>
+                            </div>
+                            <Button 
+                              className="bg-[#F1592A] hover:bg-[#E44D1F] text-white text-xs rounded-md px-3 h-7"
+                              onClick={() => router.push('/forum')}
+                            >
+                              EXPLORE
+                            </Button>
+                          </div>
+                          
+                          <div className="absolute right-2 bottom-0 opacity-20">
+                            <MessageSquare className="h-12 w-12" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="px-1 py-2">
+                        <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={() => router.push('/user_profile')}>
+                          <User className="mr-2 h-4 w-4" />
+                          <span>My Profile</span>
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={() => router.push('/browse')}>
+                          <BookOpen className="mr-2 h-4 w-4" />
+                          <span>Browse All</span>
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white">
+                          <Library className="mr-2 h-4 w-4" />
+                          <span>Library</span>
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuSeparator className="bg-[#2A2A30]" />
+                        
+                        <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={handleLogout}>
+                          <LogOut className="mr-2 h-4 w-4" />
+                          <span>Sign Out</span>
+                        </DropdownMenuItem>
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <Button 
+                    variant="ghost"
+                    onClick={() => router.push('/auth')}
+                    className="bg-gradient-to-r from-[#F1592A] to-[#D14820] text-white hover:from-[#D14820] hover:to-[#F1592A]"
+                  >
+                    Login
+                  </Button>
+                )}
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="lg:hidden"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                >
+                  {isMobileMenuOpen ? (
+                    <X className="h-6 w-6 text-[#232120] dark:text-[#E7E7E8]" />
+                  ) : (
+                    <Menu className="h-6 w-6 text-[#232120] dark:text-[#E7E7E8]" />
+                  )}
+                </Button>
+              </div>
             </div>
+
+            {isMobileMenuOpen && (
+              <div className="lg:hidden border-t border-gray-200 dark:border-gray-800 py-6">
+                <div className="flex flex-col space-y-5 px-4">
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Search forum..."
+                      className="pl-10 pr-4 py-2.5 w-full bg-white dark:bg-[#2A2827] border-[#F1592A] border-opacity-50 rounded-full focus-visible:ring-[#F1592A]"
+                    />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  </div>
+
+                  <div className="flex flex-col space-y-4">
+                    <Link 
+                      href="/"
+                      className="flex items-center gap-2 text-[#232120] dark:text-[#E7E7E8] hover:text-[#F1592A] transition-colors px-3 py-2.5 rounded-lg"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Home className="w-4 h-4" />
+                      <span>Home</span>
+                    </Link>
+                    <Link 
+                      href="/forum"
+                      className="flex items-center gap-2 text-[#F1592A] transition-colors px-3 py-2.5 rounded-lg bg-[#F1592A]/10"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      <span>Forum</span>
+                    </Link>
+                    <Link 
+                      href="/browse"
+                      className="flex items-center gap-2 text-[#232120] dark:text-[#E7E7E8] hover:text-[#F1592A] transition-colors px-3 py-2.5 rounded-lg"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      <span>Browse</span>
+                    </Link>
+                    <Link 
+                      href="/user_profile"
+                      className="flex items-center gap-2 text-[#232120] dark:text-[#E7E7E8] hover:text-[#F1592A] transition-colors px-3 py-2.5 rounded-lg"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Library className="w-4 h-4" />
+                      <span>Library</span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
-        <main className="flex-grow container mx-auto px-4 py-8">
+        <main className="flex-grow container max-w-full sm:max-w-[90vw] mx-auto px-4 py-8">
           {loading ? (
-            <div className="text-center text-[#232120] dark:text-[#E7E7E8]">Loading post...</div>
+            <div className="flex items-center justify-center h-64">
+              <div className="relative w-16 h-16">
+                <div className="absolute inset-0 border-4 border-[#F1592A]/20 rounded-full animate-ping" />
+                <div className="absolute inset-0 border-4 border-[#F1592A] rounded-full animate-spin border-t-transparent" />
+              </div>
+            </div>
           ) : post ? (
             <div className="space-y-6">
-              <Card className="bg-white dark:bg-[#3E3F3E]">
-                <CardHeader className="flex flex-row items-center justify-between space-x-4">
-                  <div className="flex items-center space-x-4">
-                    <Avatar>
-                      <AvatarImage src={userProfiles[post.authorId]?.profilePicture || '/assets/default-avatar.png'} alt={post.author} />
-                      <AvatarFallback>{post.author[0]}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <CardTitle className="text-2xl font-bold text-[#F1592A]">{post.title}</CardTitle>
-                      <p className="text-sm text-[#8E8F8E] dark:text-[#C3C3C3]">
-                        Posted by {post.author} • {post.createdAt.toLocaleString()}
-                      </p>
+              <Card className="backdrop-blur-xl bg-white/80 dark:bg-[#232120]/80 border-none shadow-lg">
+                <CardContent className="p-3 sm:p-6 md:p-8">
+                  <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+                    <div className="w-full md:w-48 flex-shrink-0 flex flex-row md:flex-col items-center md:items-center gap-4 md:gap-4 mb-4 md:mb-0 pb-4 md:pb-0 border-b md:border-b-0 border-[#F1592A]/10">
+                      <Avatar className="h-16 w-16 md:h-24 md:w-24 ring-4 ring-[#F1592A]/20">
+                        <AvatarImage src={userProfiles[post.authorId]?.profilePicture || '/assets/default-avatar.png'} alt={post.author} />
+                        <AvatarFallback>{post.author[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="text-left md:text-center">
+                        <h3 className="font-semibold text-lg text-[#232120] dark:text-[#E7E7E8]">{post.author}</h3>
+                        <p className="text-sm text-[#8E8F8E] dark:text-[#C3C3C3]">
+                          {new Date(post.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </p>
+                        <p className="text-sm text-[#8E8F8E] dark:text-[#C3C3C3]">
+                          {new Date(post.createdAt).toLocaleTimeString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                      <Badge variant="outline" 
+                        className="md:mt-2 bg-[#F1592A]/5 text-[#F1592A] border-[#F1592A]/20">
+                        {post.section}
+                      </Badge>
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-4">
+                        <h1 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent 
+                          bg-gradient-to-r from-[#F1592A] to-[#D14820]">
+                          {post.title}
+                        </h1>
+                        <Button
+                          variant="outline"
+                          className="w-full sm:w-auto bg-[#F1592A]/10 text-[#F1592A] hover:bg-[#F1592A]/20 border-none"
+                          onClick={handleBackToForums}
+                        >
+                          <ChevronLeft className="mr-2 h-4 w-4" />
+                          Back to Forums
+                        </Button>
+                      </div>
+
+                      <div className="prose dark:prose-invert max-w-none">
+                        <ReactMarkdown className="text-[#232120] dark:text-[#E7E7E8] text-base sm:text-lg">
+                          {post.content}
+                        </ReactMarkdown>
+                        {post.image && (
+                          <div className="mt-6">
+                            <Image 
+                              src={post.image} 
+                              alt="Post image" 
+                              width={600} 
+                              height={400} 
+                              className="w-full max-w-[450px] h-auto rounded-lg shadow-lg mx-auto"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    className="bg-[#F1592A] text-[#E7E7E8] hover:bg-[#D14820] border-none"
-                    onClick={handleBackToForums}
-                  >
-                    <ChevronLeft className="mr-2 h-4 w-4" />
-                    Back to Forums
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  <ReactMarkdown className="text-[#232120] dark:text-[#E7E7E8] text-lg prose dark:prose-invert max-w-none">
-                    {post.content}
-                  </ReactMarkdown>
-                  {post.image && (
-                    <div className="mt-4">
-                      <Image src={post.image} alt="Post image" width={400} height={300} className="rounded-md" />
-                    </div>
-                  )}
                 </CardContent>
               </Card>
 
-              <div className="bg-white dark:bg-[#3E3F3E] p-4 rounded-lg">
-                <div className="flex justify-between items-center mb-4">
+              <div className="backdrop-blur-xl bg-white/80 dark:bg-[#232120]/80 rounded-lg p-3 sm:p-6 border-none shadow-lg">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-4">
+                  <h2 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent 
+                    bg-gradient-to-r from-[#232120] to-[#3E3F3E] dark:from-[#E7E7E8] dark:to-[#C3C3C3]">
+                    Replies
+                  </h2>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="text-[#8E8F8E]">
+                      <Button variant="outline" className="w-full sm:w-auto text-[#8E8F8E] border-[#F1592A]/20">
                         Sort by: {sortBy} <ChevronDown className="ml-2 h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent className="bg-white/80 dark:bg-[#232120]/80 backdrop-blur-lg border-none">
                       <DropdownMenuItem onClick={() => setSortBy('New')}>New</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setSortBy('Old')}>Old</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  {/* <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#C3C3C3]" />
-                    <Input
-                      type="search"
-                      placeholder="Search Comments"
-                      className="pl-10 pr-4 py-2 w-64 bg-[#232120] text-[#E7E7E8] rounded-full focus:outline-none focus:ring-2 focus:ring-[#F1592A]"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div> */}
                 </div>
 
                 {user && (
-                  <Card className="bg-[#E7E7E8] dark:bg-[#232120] mb-4">
-                    <CardContent className="p-4">
+                  <Card className="bg-[#F8F8F8]/50 dark:bg-[#1A1918]/50 mb-6 border-none">
+                    <CardContent className="p-3 sm:p-4">
                       <Textarea
                         value={replyContent}
                         onChange={(e) => setReplyContent(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder="Write your reply... (Press Enter to submit, Ctrl+Enter for new line)"
-                        className="w-full bg-[#C3C3C3] dark:bg-[#232120] text-[#232120] dark:text-[#E7E7E8] border-[#C3C3C3] dark:border-[#3E3F3E]"
+                        className="w-full bg-white/50 dark:bg-black/50 border border-white/20 dark:border-white/10 
+                          backdrop-blur-sm focus:ring-2 focus:ring-[#F1592A]/50 focus:border-transparent
+                          text-[#232120] dark:text-[#E7E7E8] placeholder-[#8E8F8E] dark:placeholder-[#C3C3C3]"
                       />
-                      <Button onClick={() => handleReply(null, replyContent)} className="mt-2 bg-[#F1592A] text-[#E7E7E8] hover:bg-[#D14820]">
+                      <Button 
+                        onClick={() => handleReply(null, replyContent)} 
+                        className="mt-3 bg-gradient-to-r from-[#F1592A] to-[#D14820] text-white 
+                          hover:from-[#D14820] hover:to-[#F1592A]"
+                      >
                         Submit Reply
                       </Button>
                     </CardContent>
                   </Card>
                 )}
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {filterReplies(sortReplies(allReplies.filter(r => !r.parentId))).map((reply) => (
                     <ReplyComponent
                       key={reply.id}
@@ -547,9 +879,11 @@ export default function PostPage({ params }: { params: { postId: string } }) {
           )}
         </main>
 
-        <footer className="border-t border-[#C3C3C3] dark:border-[#3E3F3E] py-8 bg-[#E7E7E8] dark:bg-[#232120]">
-          <div className="container mx-auto px-4 text-center text-[#8E8F8E] dark:text-[#C3C3C3]">
-            <p className="text-sm">© 2024 Novellize Forums. All rights reserved.</p>
+        <footer className="mt-auto py-8">
+          <div className="container max-w-4xl mx-auto px-4 text-center">
+            <p className="text-sm text-[#8E8F8E] dark:text-[#C3C3C3]">
+              © 2024 Novellize Forums. All rights reserved.
+            </p>
           </div>
         </footer>
       </motion.div>
