@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 const REDIS_URL = process.env.KV_REST_API_URL;
 const REDIS_TOKEN = process.env.KV_REST_API_TOKEN;
+const MAX_CHUNK_SIZE = 400000; // ~400KB per chunk, well below Redis limits
 
 async function redisRequest(endpoint: string, options: RequestInit = {}) {
   if (!REDIS_URL || !REDIS_TOKEN) {
@@ -40,6 +41,52 @@ async function redisRequest(endpoint: string, options: RequestInit = {}) {
   }
 }
 
+// Function to split data into chunks
+function chunkData(data: string, maxChunkSize: number): string[] {
+  const chunks: string[] = [];
+  let index = 0;
+  
+  while (index < data.length) {
+    chunks.push(data.slice(index, index + maxChunkSize));
+    index += maxChunkSize;
+  }
+  
+  return chunks;
+}
+
+// Reassemble chunks into the original data
+async function reassembleChunks(baseKey: string): Promise<string | null> {
+  try {
+    // Get the chunk info first
+    const infoResult = await redisRequest(`/get/${baseKey}:info`);
+    if (!infoResult?.result) return null;
+    
+    const info = JSON.parse(infoResult.result);
+    if (!info.chunks || !info.totalLength) return null;
+    
+    let completeData = '';
+    for (let i = 0; i < info.chunks; i++) {
+      const chunkResult = await redisRequest(`/get/${baseKey}:chunk:${i}`);
+      if (!chunkResult?.result) {
+        console.error(`Missing chunk ${i} for key ${baseKey}`);
+        return null;
+      }
+      completeData += chunkResult.result;
+    }
+    
+    // Verify we got all the data
+    if (completeData.length !== info.totalLength) {
+      console.error(`Data length mismatch: ${completeData.length} vs expected ${info.totalLength}`);
+      return null;
+    }
+    
+    return completeData;
+  } catch (error) {
+    console.error('Error reassembling chunks:', error);
+    return null;
+  }
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -50,6 +97,31 @@ export async function GET(request: Request) {
     }
 
     console.log('Fetching from Redis, key:', key);
+    
+    // First check if this is a chunked value
+    const infoKey = `${key}:info`;
+    const infoResult = await redisRequest(`/get/${infoKey}`);
+    
+    if (infoResult?.result) {
+      // This is a chunked value, reassemble it
+      console.log('Chunked data detected, reassembling...');
+      const reassembledData = await reassembleChunks(key);
+      
+      if (reassembledData) {
+        try {
+          // Try to parse as JSON if possible
+          const parsedData = JSON.parse(reassembledData);
+          return NextResponse.json({ data: parsedData });
+        } catch (e) {
+          // Return as string if not JSON
+          return NextResponse.json({ data: reassembledData });
+        }
+      } else {
+        return NextResponse.json({ error: 'Failed to reassemble chunked data' }, { status: 500 });
+      }
+    }
+    
+    // Regular non-chunked key
     const result = await redisRequest(`/get/${key}`);
     console.log('Redis response:', result?.result ? 'Data found' : 'No data found');
     
@@ -83,15 +155,41 @@ export async function POST(request: Request) {
     // Convert value to string if it's an object
     const stringValue = typeof value === 'object' ? JSON.stringify(value) : value;
     
-    if (stringValue.length > 1000000) {
-      console.warn('Large value detected, might exceed Redis limits:', stringValue.length);
+    // If the value is large, chunk it
+    if (stringValue.length > MAX_CHUNK_SIZE) {
+      console.log(`Large value detected (${stringValue.length} bytes), chunking data...`);
+      const chunks = chunkData(stringValue, MAX_CHUNK_SIZE);
+      
+      // Store info about the chunks
+      const chunkInfo = {
+        chunks: chunks.length,
+        totalLength: stringValue.length,
+        createdAt: new Date().toISOString()
+      };
+      
+      await redisRequest(`/set/${key}:info/${encodeURIComponent(JSON.stringify(chunkInfo))}/ex/${ttl || 3600}`, {
+        method: 'POST'
+      });
+      
+      // Store each chunk
+      const chunkPromises = chunks.map((chunk, index) => 
+        redisRequest(`/set/${key}:chunk:${index}/${encodeURIComponent(chunk)}/ex/${ttl || 3600}`, {
+          method: 'POST'
+        })
+      );
+      
+      await Promise.all(chunkPromises);
+      
+      console.log(`Successfully stored ${chunks.length} chunks for key ${key}`);
+      
       return NextResponse.json({ 
-        error: 'Value too large',
-        size: stringValue.length,
-        limit: 1000000
-      }, { status: 400 });
+        success: true,
+        chunked: true,
+        chunks: chunks.length
+      });
     }
-
+    
+    // For smaller values, proceed normally
     console.log('Setting Redis key:', key, 'with TTL:', ttl);
     
     const endpoint = ttl ? 
@@ -105,18 +203,9 @@ export async function POST(request: Request) {
       
       console.log('Redis SET response:', setResult);
       
-      // Verify the data was cached
-      const verifyResult = await redisRequest(`/get/${encodeURIComponent(key)}`);
-      console.log('Verification result:', {
-        exists: !!verifyResult?.result,
-        storedLength: verifyResult?.result ? 
-          (typeof verifyResult.result === 'string' ? verifyResult.result.length : JSON.stringify(verifyResult.result).length) 
-          : 0
-      });
-      
       return NextResponse.json({ 
         success: true,
-        verificationResult: !!verifyResult?.result
+        chunked: false
       });
     } catch (redisError) {
       console.error('Redis operation failed:', redisError);

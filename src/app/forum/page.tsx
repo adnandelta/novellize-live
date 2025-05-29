@@ -230,6 +230,13 @@ const handleCreatePost = async (e: React.FormEvent) => {
     toast.error('You must be logged in to create a post')
     return
   }
+  
+  // Check if user is admin only for announcements section
+  if (newPostSection === 'announcements' && userType !== 'admin') {
+    toast.error('Only administrators can create announcements')
+    return
+  }
+  
   if (!newPostTitle.trim() || !newPostContent.trim()) {
     toast.error('Please fill in all fields')
     return
@@ -709,102 +716,106 @@ return (
             <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#232120] to-[#3E3F3E] dark:from-[#E7E7E8] dark:to-[#C3C3C3]">
               Forum Discussions
             </h2>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-                <Button className="w-full sm:w-auto bg-gradient-to-r from-[#F1592A] to-[#D14820] text-white 
-                  hover:from-[#D14820] hover:to-[#F1592A] rounded-full px-6
-                  shadow-lg hover:shadow-xl transition-all duration-300">
-                <Plus className="mr-2 h-4 w-4" /> New Post
-              </Button>
-            </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px] bg-white/80 dark:bg-[#232120]/80 backdrop-blur-lg border-none max-w-[95vw] mx-auto">
-              <DialogHeader>
-                  <DialogTitle className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#F1592A] to-[#D14820]">
-                    Create a New Post
-                  </DialogTitle>
-              </DialogHeader>
-                <form onSubmit={handleCreatePost} className="space-y-4 mt-4">
-                  <div className="space-y-2">
-                <Input
-                  placeholder="Post Title"
-                  value={newPostTitle}
-                  onChange={(e) => setNewPostTitle(e.target.value)}
-                      className="w-full bg-white/50 dark:bg-black/50 border border-white/20 dark:border-white/10 
+            {user && (
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full sm:w-auto bg-gradient-to-r from-[#F1592A] to-[#D14820] text-white 
+                    hover:from-[#D14820] hover:to-[#F1592A] rounded-full px-6
+                    shadow-lg hover:shadow-xl transition-all duration-300">
+                    <Plus className="mr-2 h-4 w-4" /> New Post
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[600px] bg-white/80 dark:bg-[#232120]/80 backdrop-blur-lg border-none max-w-[95vw] mx-auto">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#F1592A] to-[#D14820]">
+                      Create a New Post
+                    </DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleCreatePost} className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Post Title"
+                        value={newPostTitle}
+                        onChange={(e) => setNewPostTitle(e.target.value)}
+                        className="w-full bg-white/50 dark:bg-black/50 border border-white/20 dark:border-white/10 
+                          backdrop-blur-sm focus:ring-2 focus:ring-[#F1592A]/50 focus:border-transparent
+                          text-[#232120] dark:text-[#E7E7E8] placeholder-[#8E8F8E] dark:placeholder-[#C3C3C3]"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Textarea
+                        placeholder="Post Content"
+                        value={newPostContent}
+                        onChange={(e) => setNewPostContent(e.target.value)}
+                        className="w-full h-32 bg-white/50 dark:bg-black/50 border border-white/20 dark:border-white/10 
+                          backdrop-blur-sm focus:ring-2 focus:ring-[#F1592A]/50 focus:border-transparent
+                          text-[#232120] dark:text-[#E7E7E8] placeholder-[#8E8F8E] dark:placeholder-[#C3C3C3] font-mono"
+                      />
+                    </div>
+                    <Select value={newPostSection} onValueChange={setNewPostSection}>
+                      <SelectTrigger className="w-full bg-white/50 dark:bg-black/50 border border-white/20 dark:border-white/10 
                         backdrop-blur-sm focus:ring-2 focus:ring-[#F1592A]/50 focus:border-transparent
-                        text-[#232120] dark:text-[#E7E7E8] placeholder-[#8E8F8E] dark:placeholder-[#C3C3C3]"
-                />
-                  </div>
-                  <div className="space-y-2">
-                <Textarea
-                  placeholder="Post Content"
-                  value={newPostContent}
-                  onChange={(e) => setNewPostContent(e.target.value)}
-                      className="w-full h-32 bg-white/50 dark:bg-black/50 border border-white/20 dark:border-white/10 
-                        backdrop-blur-sm focus:ring-2 focus:ring-[#F1592A]/50 focus:border-transparent
-                        text-[#232120] dark:text-[#E7E7E8] placeholder-[#8E8F8E] dark:placeholder-[#C3C3C3] font-mono"
-                />
-                  </div>
-                <Select value={newPostSection} onValueChange={setNewPostSection}>
-                    <SelectTrigger className="w-full bg-white/50 dark:bg-black/50 border border-white/20 dark:border-white/10 
-                      backdrop-blur-sm focus:ring-2 focus:ring-[#F1592A]/50 focus:border-transparent
-                      text-[#232120] dark:text-[#E7E7E8]">
-                    <SelectValue placeholder="Select a section" />
-                  </SelectTrigger>
-                    <SelectContent className="bg-white/80 dark:bg-[#232120]/80 backdrop-blur-lg border border-white/20 dark:border-white/10">
-                      <SelectItem value="announcements" className="text-[#232120] dark:text-[#E7E7E8] focus:bg-[#F1592A]/10">Announcements</SelectItem>
-                      <SelectItem value="general" className="text-[#232120] dark:text-[#E7E7E8] focus:bg-[#F1592A]/10">General</SelectItem>
-                      <SelectItem value="updates" className="text-[#232120] dark:text-[#E7E7E8] focus:bg-[#F1592A]/10">Updates</SelectItem>
-                      <SelectItem value="community" className="text-[#232120] dark:text-[#E7E7E8] focus:bg-[#F1592A]/10">Community Discussions</SelectItem>
-                  </SelectContent>
-                </Select>
-                <div className="flex items-center space-x-2">
+                        text-[#232120] dark:text-[#E7E7E8]">
+                        <SelectValue placeholder="Select a section" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white/80 dark:bg-[#232120]/80 backdrop-blur-lg border border-white/20 dark:border-white/10">
+                        <SelectItem value="announcements" className="text-[#232120] dark:text-[#E7E7E8] focus:bg-[#F1592A]/10">
+                          Announcements {userType !== 'admin' && '(Admin Only)'}
+                        </SelectItem>
+                        <SelectItem value="general" className="text-[#232120] dark:text-[#E7E7E8] focus:bg-[#F1592A]/10">General</SelectItem>
+                        <SelectItem value="updates" className="text-[#232120] dark:text-[#E7E7E8] focus:bg-[#F1592A]/10">Updates</SelectItem>
+                        <SelectItem value="community" className="text-[#232120] dark:text-[#E7E7E8] focus:bg-[#F1592A]/10">Community Discussions</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="flex items-center space-x-2">
+                      <Button 
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()} 
+                        variant="outline"
+                        className="bg-white/50 dark:bg-black/50 border border-white/20 dark:border-white/10 
+                          text-[#232120] dark:text-[#E7E7E8] hover:bg-[#F1592A]/10 hover:text-[#F1592A]"
+                      >
+                        <ImageIcon className="mr-2 h-4 w-4" />
+                        {newPostImage ? 'Change Image' : 'Add Image'}
+                      </Button>
+                      {newPostImage && (
+                        <span className="text-sm text-[#8E8F8E] dark:text-[#C3C3C3] truncate max-w-[200px]">
+                          {newPostImage.name}
+                        </span>
+                      )}
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageUpload}
+                        accept="image/*"
+                        className="hidden"
+                      />
+                    </div>
                     <Button 
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()} 
-                      variant="outline"
-                      className="bg-white/50 dark:bg-black/50 border border-white/20 dark:border-white/10 
-                        text-[#232120] dark:text-[#E7E7E8] hover:bg-[#F1592A]/10 hover:text-[#F1592A]"
+                      type="submit" 
+                      className="w-full bg-gradient-to-r from-[#F1592A] to-[#D14820] text-white 
+                        hover:from-[#D14820] hover:to-[#F1592A] shadow-lg hover:shadow-xl 
+                        transition-all duration-300 relative"
+                      disabled={isSubmitting}
                     >
-                    <ImageIcon className="mr-2 h-4 w-4" />
-                    {newPostImage ? 'Change Image' : 'Add Image'}
-                  </Button>
-                    {newPostImage && (
-                      <span className="text-sm text-[#8E8F8E] dark:text-[#C3C3C3] truncate max-w-[200px]">
-                        {newPostImage.name}
-                      </span>
-                    )}
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleImageUpload}
-                    accept="image/*"
-                    className="hidden"
-                  />
-                </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-[#F1592A] to-[#D14820] text-white 
-                      hover:from-[#D14820] hover:to-[#F1592A] shadow-lg hover:shadow-xl 
-                      transition-all duration-300 relative"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <span className="opacity-0">Create Post</span>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        </div>
-                      </>
-                    ) : (
-                      'Create Post'
-                    )}
-                  </Button>
-                </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+                      {isSubmitting ? (
+                        <>
+                          <span className="opacity-0">Create Post</span>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          </div>
+                        </>
+                      ) : (
+                        'Create Post'
+                      )}
+                    </Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
 
-        {loading ? (
+          {loading ? (
             <div className="flex items-center justify-center h-64">
               <div className="relative w-16 h-16">
                 <div className="absolute inset-0 border-4 border-[#F1592A]/20 rounded-full animate-ping" />

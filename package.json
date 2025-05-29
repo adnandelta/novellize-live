@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "update-ranking-cache": "tsx src/scripts/update-ranking-cache.ts"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.3",
@@ -81,6 +82,7 @@
     "eslint-config-next": "14.2.11",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "tsx": "^4.19.4",
     "typescript": "^5"
   }
 }

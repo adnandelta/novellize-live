@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { toast, Toaster } from 'react-hot-toast'
-import { PlusIcon, Pencil, Trash, AlertTriangle, BookOpen, Home, User, Eye, Star, UserPlus, Clock, X } from 'lucide-react'
+import { PlusIcon, Pencil, Trash, AlertTriangle, BookOpen, Home, User, Eye, Star, UserPlus, Clock, X, TrendingUp } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Timestamp } from 'firebase/firestore'
@@ -922,16 +922,58 @@ export default function AdminDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               {isAdmin && (
-                <Link href="/admin/users" passHref>
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Button variant="outline" className="bg-gradient-to-r from-[#2A2827] to-[#333] border-[#444] text-white hover:from-[#3A3837] hover:to-[#444] transition-all duration-300">
-                    <User className="mr-2 h-4 w-4" /> Manage Users
-                  </Button>
-                  </motion.div>
-                </Link>
+                <>
+                  <Link href="/admin/featured-novels" passHref>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button variant="outline" className="bg-gradient-to-r from-[#2A2827] to-[#333] border-[#444] text-white hover:from-[#3A3837] hover:to-[#444] transition-all duration-300">
+                        <Star className="mr-2 h-4 w-4" /> Featured Novels
+                      </Button>
+                    </motion.div>
+                  </Link>
+                  <Link href="/admin/top-releases" passHref>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button variant="outline" className="bg-gradient-to-r from-[#2A2827] to-[#333] border-[#444] text-white hover:from-[#3A3837] hover:to-[#444] transition-all duration-300">
+                        <BookOpen className="mr-2 h-4 w-4" /> Top Releases
+                      </Button>
+                    </motion.div>
+                  </Link>
+                  <Link href="/admin/weekly-featured" passHref>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button variant="outline" className="bg-gradient-to-r from-[#2A2827] to-[#333] border-[#444] text-white hover:from-[#3A3837] hover:to-[#444] transition-all duration-300">
+                        <Star className="mr-2 h-4 w-4" /> Weekly Featured
+                      </Button>
+                    </motion.div>
+                  </Link>
+                  <Link href="/admin/ranking-novels" passHref>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button variant="outline" className="bg-gradient-to-r from-[#2A2827] to-[#333] border-[#444] text-white hover:from-[#3A3837] hover:to-[#444] transition-all duration-300">
+                        <TrendingUp className="mr-2 h-4 w-4" /> Ranking Novels
+                      </Button>
+                    </motion.div>
+                  </Link>
+                  <Link href="/admin/users" passHref>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button variant="outline" className="bg-gradient-to-r from-[#2A2827] to-[#333] border-[#444] text-white hover:from-[#3A3837] hover:to-[#444] transition-all duration-300">
+                        <User className="mr-2 h-4 w-4" /> Manage Users
+                      </Button>
+                    </motion.div>
+                  </Link>
+                </>
               )}
             </div>
           </div>
