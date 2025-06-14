@@ -300,10 +300,10 @@ export function NovelRankings({ newReleases, trending, popular, loading = false 
   )
 
   return (
-    <section className="py-4 md:py-6 bg-[#E7E7E8] dark:bg-[#232120]">
+    <section className="pt-4 md:pt-6 bg-[#E7E7E8] dark:bg-[#232120]">
       <CustomStyles />
       <div className="container mx-auto px-3">
-        <div className="text-center mb-12">
+        <div className="text-center mb-6">
           <h1 className="text-4xl font-extrabold gradient-text cool-underline floating inline-block">
             RANKING
           </h1>

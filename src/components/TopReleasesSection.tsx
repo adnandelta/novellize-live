@@ -119,7 +119,7 @@ export function TopReleasesSection({ latestNovels, editorsPicks, loading }: TopR
 
   if (loading) {
     return (
-      <section className="py-8 md:py-12 bg-[#E7E7E8] dark:bg-[#232120]">
+      <section className=" bg-[#E7E7E8] dark:bg-[#232120]">
         <div className="container mx-auto px-4">
           <div className="flex justify-center items-center h-[500px]">
             <div className="border-4 border-[#F1592A] border-t-transparent rounded-lg animate-spin"></div>
@@ -329,7 +329,7 @@ export function TopReleasesSection({ latestNovels, editorsPicks, loading }: TopR
             {editorsPicks.length > 0 && (
               <div className={`${latestNovels.length > 0 ? 'lg:w-[40%]' : 'w-full'} bg-[#1A1A1A] dark:bg-[#1A1A1A] p-6 rounded-lg`}>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-white">
+                  <h2 className="text-2xl font-bold text-[#232120] dark:text-[#E7E7E8] mb-4 relative inline-block after:content-[''] after:absolute after:left-0 after:right-0 after:bottom-0 after:h-[2px] after:bg-[#F1592A]">
                     Editors' Choice
                   </h2>
                   

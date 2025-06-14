@@ -94,7 +94,7 @@ export function LatestReleasesCarousel({
   }
 
   return (
-    <section className="py-8 md:py-12 bg-[#E7E7E8] dark:bg-[#232120]">
+    <section className=" bg-[#E7E7E8] dark:bg-[#232120]">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <motion.h2 

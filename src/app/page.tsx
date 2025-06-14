@@ -997,7 +997,7 @@ export default function ModernLightNovelsHomepage() {
 
           <main className="flex-grow">
             <Toaster position="top-center" />
-            <section className="relative py-12 md:py-16 lg:py-24 overflow-hidden">
+            <section className="relative py-8 overflow-hidden">
               {/* Hero Section with Background */}
               <div className="absolute inset-0 z-0">
                 <Image
@@ -1171,7 +1171,7 @@ export default function ModernLightNovelsHomepage() {
             </section>
 
             {/* Popular Section */}
-            <section id="popular" className="py-8 bg-[#232120] text-center">
+            <section id="popular" className="py-1 bg-[#232120] text-center">
               <h1 className="text-4xl font-extrabold gradient-text cool-underline floating inline-block">
                 Our Popular
               </h1>
@@ -1208,7 +1208,7 @@ export default function ModernLightNovelsHomepage() {
             <FAQSection />
 
             {/* Explore Genres Section */}
-            <section className="py-12 md:py-16 bg-white dark:bg-[#232120] relative overflow-hidden">
+            <section className="py-1 bg-white dark:bg-[#232120] relative overflow-hidden">
               {/* Circuit-like background patterns */}
               <div className="absolute inset-0 opacity-10">
                 <div className="absolute w-full h-full">
@@ -1390,7 +1390,7 @@ export default function ModernLightNovelsHomepage() {
             </section>
           </main>
 
-          <footer className="border-t py-6 md:py-8 bg-white dark:bg-[#232120] dark:border-[#3E3F3E]">
+          <footer className="border-t py-1 bg-white dark:bg-[#232120] dark:border-[#3E3F3E]">
             <div className="container mx-auto px-4 md:flex md:items-center md:justify-between">
               <motion.div 
                 className="text-center md:text-left mb-4 md:mb-0"

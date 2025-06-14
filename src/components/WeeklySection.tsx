@@ -157,7 +157,7 @@ export default function WeeklyBookSection({ popularNovels, announcements }: Week
   }
 
   return (
-    <section className="pt-2 pb-6 bg-[#E7E7E8] dark:bg-[#3e3f3e]">
+    <section className="bg-[#E7E7E8] dark:bg-[#3e3f3e]">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Weekly Featured Novel */}
@@ -247,7 +247,7 @@ export default function WeeklyBookSection({ popularNovels, announcements }: Week
 
           {/* Announcements */}
           <div className="bg-white dark:bg-[#3E3F3E] rounded-2xl p-4 lg:col-span-1">
-            <h2 className="text-2xl font-bold text-[#232120] dark:text-[#E7E7E8] mb-4">Announcements</h2>
+            <h2 className="text-2xl font-bold text-[#232120] dark:text-[#E7E7E8] mb-4 relative inline-block after:content-[''] after:absolute after:left-0 after:right-0 after:bottom-0 after:h-[2px] after:bg-[#F1592A]">Announcements</h2>
             <div className="space-y-3 max-h-[350px] relative">
               <AnimatePresence mode="wait">
                 <motion.div
