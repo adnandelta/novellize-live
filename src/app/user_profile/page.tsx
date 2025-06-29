@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from '../authcontext'
 import { db } from '@/lib/firebaseConfig'
@@ -89,7 +89,7 @@ interface Novel {
   readTime?: number
 }
 
-export default function UserProfilePage() {
+function UserProfileContent() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const { user } = useAuth()
@@ -200,492 +200,383 @@ export default function UserProfilePage() {
         display: false,
       },
     },
-    cutout: '65%',
+  }
+
+  // Fetch user profile data
+  const fetchUserProfile = async () => {
+    if (!user) return
+    
+    try {
+      const targetUserId = viewingUserId || user.uid
+      const userQuery = query(collection(db, 'users'), where('uid', '==', targetUserId))
+      const userSnapshot = await getDocs(userQuery)
+      
+      if (!userSnapshot.empty) {
+        const userData = userSnapshot.docs[0].data() as UserProfile
+        setProfile(userData)
+        setEditFormData({
+          username: userData.username || '',
+          bio: userData.bio || '',
+          profilePicture: userData.profilePicture || '',
+          favoriteGenres: userData.favoriteGenres || []
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Fetch followed novels
+  const fetchFollowedNovels = async () => {
+    if (!user) return
+    
+    try {
+      const targetUserId = viewingUserId || user.uid
+      
+      // Get user's followed novels from bookmarks
+      const bookmarksQuery = query(
+        collection(db, 'bookmarks'), 
+        where('userId', '==', targetUserId),
+        orderBy('createdAt', 'desc'),
+        limit(10)
+      )
+      const bookmarksSnapshot = await getDocs(bookmarksQuery)
+      
+      const novelIds = bookmarksSnapshot.docs.map(doc => doc.data().novelId)
+      
+      if (novelIds.length === 0) {
+        setFollowedNovels([])
+        return
+      }
+      
+      // Fetch novel details for each bookmarked novel
+      const novelsData: Novel[] = []
+      
+      for (const novelId of novelIds) {
+        try {
+          const novelDoc = await getDoc(doc(db, 'novels', novelId))
+          if (novelDoc.exists()) {
+            const novelData = novelDoc.data()
+            
+            // Get user's reading progress for this novel
+            const progressQuery = query(
+              collection(db, 'readingProgress'),
+              where('userId', '==', targetUserId),
+              where('novelId', '==', novelId)
+            )
+            const progressSnapshot = await getDocs(progressQuery)
+            
+            let progress = { chapter: 0, percentage: 0 }
+            let lastRead = null
+            
+            if (!progressSnapshot.empty) {
+              const progressData = progressSnapshot.docs[0].data()
+              progress = {
+                chapter: progressData.currentChapter || 0,
+                percentage: progressData.progressPercentage || 0
+              }
+              lastRead = progressData.lastReadAt
+            }
+            
+            novelsData.push({
+              novelId: novelId,
+              title: novelData.title || 'Untitled',
+              coverPhoto: novelData.coverPhoto || '',
+              synopsis: novelData.synopsis || '',
+              rating: novelData.averageRating || 0,
+              genres: novelData.genres || [],
+              progress: progress,
+              lastRead: lastRead,
+              likes: novelData.totalLikes || 0,
+              availability: novelData.availability || 'free',
+              publishers: novelData.publishers || [],
+              tags: novelData.tags || [],
+              chapters: novelData.totalChapters || 0,
+              wordCount: novelData.wordCount || 0,
+              readTime: novelData.estimatedReadTime || 0
+            })
+          }
+        } catch (error) {
+          console.error(`Error fetching novel ${novelId}:`, error)
+        }
+      }
+      
+      setFollowedNovels(novelsData)
+    } catch (error) {
+      console.error('Error fetching followed novels:', error)
+    }
+  }
+
+  // Fetch recommendations based on user's reading history and preferences
+  const fetchRecommendations = async () => {
+    try {
+      // For now, fetch some random novels as recommendations
+      // In a real app, this would use a recommendation algorithm
+      const novelsQuery = query(
+        collection(db, 'novels'), 
+        orderBy('averageRating', 'desc'),
+        limit(8)
+      )
+      const novelsSnapshot = await getDocs(novelsQuery)
+      
+      const recommendedNovels = novelsSnapshot.docs.map(doc => ({
+        novelId: doc.id,
+        title: doc.data().title || 'Untitled',
+        coverPhoto: doc.data().coverPhoto || '',
+        synopsis: doc.data().synopsis || '',
+        rating: doc.data().averageRating || 0,
+        genres: doc.data().genres || [],
+        likes: doc.data().totalLikes || 0,
+        availability: doc.data().availability || 'free',
+        publishers: doc.data().publishers || [],
+        tags: doc.data().tags || [],
+        chapters: doc.data().totalChapters || 0,
+        wordCount: doc.data().wordCount || 0,
+        readTime: doc.data().estimatedReadTime || 0
+      })) as Novel[]
+      
+      setRecommendations(recommendedNovels)
+    } catch (error) {
+      console.error('Error fetching recommendations:', error)
+    }
+  }
+
+  // Handle profile update
+  const handleUpdateProfile = async () => {
+    if (!user || !isViewingOwnProfile) return
+    
+    try {
+      const userQuery = query(collection(db, 'users'), where('uid', '==', user.uid))
+      const userSnapshot = await getDocs(userQuery)
+      
+      if (!userSnapshot.empty) {
+        const userDocRef = userSnapshot.docs[0].ref
+        await updateDoc(userDocRef, {
+          username: editFormData.username,
+          bio: editFormData.bio,
+          profilePicture: editFormData.profilePicture,
+          favoriteGenres: editFormData.favoriteGenres
+        })
+        
+        // Update local state
+        setProfile(prev => prev ? {
+          ...prev,
+          username: editFormData.username,
+          bio: editFormData.bio,
+          profilePicture: editFormData.profilePicture,
+          favoriteGenres: editFormData.favoriteGenres
+        } : null)
+        
+        setIsEditProfileOpen(false)
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error)
+    }
+  }
+
+  // Handle genre selection
+  const handleGenreToggle = (genreId: string) => {
+    setEditFormData(prev => ({
+      ...prev,
+      favoriteGenres: prev.favoriteGenres.includes(genreId)
+        ? prev.favoriteGenres.filter(id => id !== genreId)
+        : [...prev.favoriteGenres, genreId]
+    }))
   }
 
   useEffect(() => {
     setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    if (profile) {
-      setEditFormData({
-        username: profile.username || '',
-        bio: profile.bio || '',
-        profilePicture: profile.profilePicture || '',
-        favoriteGenres: profile.favoriteGenres || []
-      })
-    }
-  }, [profile])
-
-  useEffect(() => {
-    if (user || viewingUserId) {
+    if (user) {
       fetchUserProfile()
       fetchFollowedNovels()
       fetchRecommendations()
     }
   }, [user, viewingUserId])
 
-  const fetchUserProfile = async () => {
-    const targetUserId = viewingUserId || user?.uid
-    if (!targetUserId) return
-    
-    try {
-      const userDoc = await getDoc(doc(db, 'users', targetUserId))
-      if (userDoc.exists()) {
-        const userData = userDoc.data() as UserProfile
-        setProfile(userData)
-        
-        // Only redirect to author profile if viewing own profile and user is an author
-        if (isViewingOwnProfile && userData.userType === 'author') {
-          router.push(`/author/${targetUserId}`)
-          return
-        }
-      }
-      setLoading(false)
-    } catch (error) {
-      console.error('Error fetching user profile:', error)
-      setLoading(false)
-    }
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0F1419] via-[#1A2234] to-[#0F1419] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading profile...</p>
+        </div>
+      </div>
+    )
   }
 
-  const fetchFollowedNovels = async () => {
-    const targetUserId = viewingUserId || user?.uid
-    if (!targetUserId) return
-    try {
-      console.log('Fetching followed novels for user:', targetUserId)
-      
-      // Try multiple approaches to fetch followed novels
-
-      // Approach 1: Check if user has followedNovels directly in user document
-      const userRef = doc(db, 'users', targetUserId)
-      const userDoc = await getDoc(userRef)
-      
-      if (userDoc.exists() && userDoc.data().followedNovels && userDoc.data().followedNovels.length > 0) {
-        console.log('Found followedNovels in user document')
-        const followedIds = userDoc.data().followedNovels
-        
-        const novelPromises = followedIds.map(async (novelId: string) => {
-          const novelDoc = await getDoc(doc(db, 'novels', novelId))
-          if (novelDoc.exists()) {
-            const data = novelDoc.data()
-            return {
-              novelId,
-              ...data,
-              // Get progress data if available
-              progress: userDoc.data().novelProgress?.[novelId] || null,
-              // Add additional fields or set defaults if they don't exist
-              chapters: data.chapters || Math.floor(Math.random() * 100 + 5),
-              wordCount: data.wordCount || Math.floor(Math.random() * 10000 + 1000),
-              readTime: data.readTime || Math.floor(Math.random() * 200 + 10)
-            } as Novel
-          }
-          return null
-        })
-        
-        const novels = (await Promise.all(novelPromises)).filter(Boolean) as Novel[]
-        console.log('Fetched novels from user document:', novels.length)
-        setFollowedNovels(novels)
-        return
-      }
-      
-      // Approach 2: Check for following collection
-      console.log('Trying following collection approach')
-      const followingRef = collection(db, 'users', targetUserId, 'following')
-      const followingSnapshot = await getDocs(followingRef)
-      
-      if (!followingSnapshot.empty) {
-        console.log('Found following collection with docs:', followingSnapshot.docs.length)
-      const novelPromises = followingSnapshot.docs.map(async (followingDoc) => {
-        const novelId = followingDoc.id
-        const novelDoc = await getDoc(doc(db, 'novels', novelId))
-        if (novelDoc.exists()) {
-          return {
-              novelId,
-              ...novelDoc.data(),
-          } as Novel
-        }
-        return null
-      })
-      
-        const novels = (await Promise.all(novelPromises)).filter(Boolean) as Novel[]
-        console.log('Fetched novels from following collection:', novels.length)
-        setFollowedNovels(novels)
-        return
-      }
-      
-      // Approach 3: Check library collection
-      console.log('Trying library collection approach')
-      const libraryRef = doc(db, 'library', targetUserId)
-      const libraryDoc = await getDoc(libraryRef)
-      
-      if (libraryDoc.exists() && libraryDoc.data().followedNovels) {
-        console.log('Found library document with followedNovels')
-        const followedIds = libraryDoc.data().followedNovels
-        
-        const novelPromises = followedIds.map(async (novelId: string) => {
-          const novelDoc = await getDoc(doc(db, 'novels', novelId))
-          if (novelDoc.exists()) {
-            return {
-              novelId,
-              ...novelDoc.data(),
-              lastRead: libraryDoc.data().lastRead?.[novelId] || null,
-              progress: libraryDoc.data().progress?.[novelId] || null
-            } as Novel
-          }
-          return null
-        })
-        
-        const novels = (await Promise.all(novelPromises)).filter(Boolean) as Novel[]
-        console.log('Fetched novels from library collection:', novels.length)
-        setFollowedNovels(novels)
-        return
-      }
-      
-      // If we still don't have novels, use sample data for demo
-      if (followedNovels.length === 0) {
-        console.log('Using sample novels as fallback')
-        // Set sample novels for demo purposes
-        const sampleNovels: Novel[] = [
-          {
-            novelId: 'sample1',
-            title: 'The Dragon\'s Legacy',
-            synopsis: 'A fantasy tale of dragons and ancient prophecies',
-            rating: 4.7,
-            genres: ['Fantasy', 'Adventure'],
-            coverPhoto: 'https://source.unsplash.com/random/400x600?book,fantasy',
-            progress: { percentage: 67, chapter: 32 },
-            chapters: 48,
-            wordCount: 9800,
-            readTime: 478
-          },
-          {
-            novelId: 'sample2',
-            title: 'Midnight Shadows',
-            synopsis: 'A thrilling mystery set in a small coastal town',
-            rating: 4.2,
-            genres: ['Mystery', 'Thriller'],
-            coverPhoto: 'https://source.unsplash.com/random/400x600?book,mystery',
-            progress: { percentage: 25, chapter: 8 },
-            chapters: 32,
-            wordCount: 12700,
-            readTime: 566
-          },
-          {
-            novelId: 'sample3',
-            title: 'Stars Beyond',
-            synopsis: 'A sci-fi adventure across the stars',
-            rating: 4.5,
-            genres: ['Sci-Fi', 'Space'],
-            coverPhoto: 'https://source.unsplash.com/random/400x600?book,scifi',
-            progress: { percentage: 90, chapter: 41 },
-            chapters: 45,
-            wordCount: 5000,
-            readTime: 349
-          }
-        ]
-        setFollowedNovels(sampleNovels)
-      }
-      
-    } catch (error) {
-      console.error('Error fetching followed novels:', error)
-      // Provide some sample data even if there's an error
-      const sampleNovels: Novel[] = [
-        {
-          novelId: 'sample1',
-          title: 'The Dragon\'s Legacy',
-          synopsis: 'A fantasy tale of dragons and ancient prophecies',
-          rating: 4.7,
-          genres: ['Fantasy', 'Adventure'],
-          coverPhoto: 'https://source.unsplash.com/random/400x600?book,fantasy',
-          progress: { percentage: 67, chapter: 32 },
-          chapters: 48,
-          wordCount: 9800,
-          readTime: 478
-        }
-      ]
-      setFollowedNovels(sampleNovels)
-    }
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0F1419] via-[#1A2234] to-[#0F1419] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-400">Profile not found</p>
+        </div>
+      </div>
+    )
   }
-
-  const fetchRecommendations = async () => {
-    try {
-      // Fetch top rated novels for recommendations
-      const recommendationsQuery = query(
-        collection(db, 'novels'), 
-        orderBy('rating', 'desc'), 
-        limit(4)
-      )
-      
-      const querySnapshot = await getDocs(recommendationsQuery)
-      const novels = querySnapshot.docs.map(doc => {
-        const data = doc.data()
-        return {
-          novelId: doc.id,
-          title: data.title,
-          synopsis: data.synopsis,
-          rating: data.rating,
-          coverPhoto: data.coverPhoto,
-          genres: data.genres
-        } as Novel
-      })
-      
-      setRecommendations(novels)
-    } catch (error) {
-      console.error('Error fetching recommendations:', error)
-    }
-  }
-
-  const handleUpdateProfile = async () => {
-    if (!user) return
-    try {
-      await updateDoc(doc(db, 'users', user.uid), {
-        username: editFormData.username,
-        bio: editFormData.bio,
-        profilePicture: editFormData.profilePicture,
-        favoriteGenres: editFormData.favoriteGenres
-      })
-      
-      setProfile(prev => prev ? {
-        ...prev,
-          username: editFormData.username,
-          bio: editFormData.bio,
-        profilePicture: editFormData.profilePicture,
-        favoriteGenres: editFormData.favoriteGenres
-      } : null)
-      
-      setIsEditProfileOpen(false)
-    } catch (error) {
-      console.error('Error updating profile:', error)
-    }
-  }
-
-  if (!mounted || loading) return null
 
   return (
-    <div className="min-h-screen bg-[#E7E7E8] dark:bg-[#232120] text-[#232120] dark:text-[#E7E7E8]">
-      {/* Header Background */}
-      <div className="relative h-[200px] w-full overflow-hidden">
-        <Image 
-          src="/assets/default-cover.jpg"
-          alt="Background"
-          fill
-          className="object-cover"
-          priority
-        />
-        {/* Overlay with gradient and stars */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#E7E7E8]/80 to-[#E7E7E8]/60 dark:from-[#232120]/80 dark:to-[#232120]/60" />
-        
-        {/* Stars effect */}
-        <div className="absolute inset-0">
-          <div className="absolute top-4 left-[10%] w-1 h-1 bg-white rounded-full opacity-60" />
-          <div className="absolute top-8 left-[20%] w-2 h-2 bg-white rounded-full opacity-40" />
-          <div className="absolute top-12 right-[30%] w-1.5 h-1.5 bg-white rounded-full opacity-50" />
-          <div className="absolute top-6 right-[15%] w-1 h-1 bg-white rounded-full opacity-70" />
-        </div>
-        
-        {/* Planet effect */}
-        <div className="absolute -right-20 -top-20 w-[200px] h-[200px] rounded-full bg-gradient-to-br from-gray-400/20 to-gray-600/20 blur-sm" />
-        
-        {/* Header Content */}
-        <div className="container max-w-[1200px] mx-auto relative z-10">
-          {/* Top Bar */}
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center gap-2">
-              <Link href="/" className="bg-[#f97316] hover:bg-[#ea580c] text-white px-4 py-1 rounded-full text-sm mr-3">
-                Home
-              </Link>
-              <span className="text-sm text-gray-300">Level {profile?.level || 23}</span>
+    <div className="min-h-screen bg-gradient-to-br from-[#0F1419] via-[#1A2234] to-[#0F1419] text-white">
+      {/* Header */}
+      <div className="relative bg-gradient-to-r from-[#1A2234]/80 to-[#0F1419]/80 backdrop-blur-md border-b border-gray-700/20">
+        <div className="absolute inset-0 bg-[url('/assets/hero-section.jpg')] bg-cover bg-center opacity-10"></div>
+        <div className="relative max-w-7xl mx-auto px-4 py-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+            {/* Profile Picture */}
+            <div className="relative">
+              <Avatar className="w-32 h-32 border-4 border-orange-500/30 shadow-2xl">
+                <AvatarImage src={profile.profilePicture || '/assets/default-avatar.png'} alt={profile.username} />
+                <AvatarFallback className="bg-gradient-to-br from-orange-500 to-red-500 text-white text-4xl font-bold">
+                  {profile.username?.[0] || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute -bottom-2 -right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                Lv.{profile.level || 1}
+              </div>
             </div>
-            {isViewingOwnProfile && (
-              <Dialog open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen}>
+
+            {/* Profile Info */}
+            <div className="flex-1">
+              <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-white mb-2">{profile.username || 'Anonymous User'}</h1>
+                  <div className="flex items-center gap-4 text-gray-300">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      {profile.userType || 'Reader'}
+                    </span>
+                    <span>•</span>
+                    <span>{profile.totalBooks || 0} Books</span>
+                    <span>•</span>
+                    <span>{profile.completionRate || 0}% Completion Rate</span>
+                  </div>
+                </div>
+                
+                {isViewingOwnProfile && (
+                  <Dialog open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen}>
                     <DialogTrigger asChild>
-                  <Button size="sm" className="bg-[#f97316] hover:bg-[#ea580c] text-white px-4 py-1 rounded-full text-sm flex items-center gap-2">
-                    <FaEdit className="w-3 h-3" />
-                    Edit Profile
-                        </Button>
+                      <Button className="bg-orange-500/20 hover:bg-orange-500/30 backdrop-blur-sm border border-orange-500/30 text-orange-300 px-4 py-2 rounded-lg flex items-center gap-2">
+                        <FaEdit className="w-4 h-4" />
+                        Edit Profile
+                      </Button>
                     </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px] bg-[#1A2234] text-white border-[#2A3447]">
-                    <DialogHeader>
-                  <DialogTitle>Edit Profile</DialogTitle>
-                  <DialogDescription className="text-gray-400">
-                    Make changes to your profile information here.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="username" className="text-right">
-                            Username
-                          </Label>
+                    <DialogContent className="sm:max-w-[500px] bg-[#1A2234]/95 backdrop-blur-xl border border-gray-700/50 text-white">
+                      <DialogHeader>
+                        <DialogTitle className="text-xl font-bold">Edit Profile</DialogTitle>
+                        <DialogDescription className="text-gray-400">
+                          Update your profile information and preferences.
+                        </DialogDescription>
+                      </DialogHeader>
+                      
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="username" className="text-sm font-medium">Username</Label>
                           <Input
                             id="username"
-                      defaultValue={editFormData.username}
-                      onChange={(e) => setEditFormData(prev => ({ ...prev, username: e.target.value }))}
-                      className="col-span-3 bg-[#2A3447] border-[#3b4969] focus:border-[#f97316] focus-visible:ring-0 focus-visible:ring-offset-0 text-white"
+                            value={editFormData.username}
+                            onChange={(e) => setEditFormData(prev => ({ ...prev, username: e.target.value }))}
+                            className="bg-[#2A3447]/50 border-gray-600/50 text-white"
                           />
                         </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="profilePicture" className="text-right">
-                      Picture URL
-                          </Label>
-                          <Input
-                      id="profilePicture"
-                      defaultValue={editFormData.profilePicture}
-                      onChange={(e) => setEditFormData(prev => ({ ...prev, profilePicture: e.target.value }))}
-                      className="col-span-3 bg-[#2A3447] border-[#3b4969] focus:border-[#f97316] focus-visible:ring-0 focus-visible:ring-offset-0 text-white"
-                          />
-                        </div>
-                  <div className="grid grid-cols-4 items-start gap-4">
-                    <Label htmlFor="bio" className="text-right">
-                            Bio
-                          </Label>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="bio" className="text-sm font-medium">Bio</Label>
                           <Textarea
                             id="bio"
-                      defaultValue={editFormData.bio}
-                      onChange={(e) => setEditFormData(prev => ({ ...prev, bio: e.target.value }))}
-                      className="col-span-3 bg-[#2A3447] border-[#3b4969] focus:border-[#f97316] focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[100px] text-white"
+                            value={editFormData.bio}
+                            onChange={(e) => setEditFormData(prev => ({ ...prev, bio: e.target.value }))}
+                            className="bg-[#2A3447]/50 border-gray-600/50 text-white min-h-[80px]"
+                            placeholder="Tell us about yourself..."
                           />
                         </div>
                         
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="favoriteGenres" className="text-right">
-                            Favorite Genres
-                          </Label>
+                        <div className="space-y-2">
+                          <Label htmlFor="profilePicture" className="text-sm font-medium">Profile Picture URL</Label>
                           <Input
-                            id="favoriteGenres"
-                      placeholder="fantasy, sci-fi, romance (comma separated)"
-                      defaultValue={editFormData.favoriteGenres.join(', ')}
-                      onChange={(e) => {
-                        const genresString = e.target.value;
-                        const genres = genresString
-                          .split(',')
-                          .map(g => g.trim().toLowerCase())
-                          .filter(g => g !== '');
-                        setEditFormData(prev => ({ ...prev, favoriteGenres: genres }));
-                      }}
-                      className="col-span-3 bg-[#2A3447] border-[#3b4969] focus:border-[#f97316] focus-visible:ring-0 focus-visible:ring-offset-0 text-white"
+                            id="profilePicture"
+                            value={editFormData.profilePicture}
+                            onChange={(e) => setEditFormData(prev => ({ ...prev, profilePicture: e.target.value }))}
+                            className="bg-[#2A3447]/50 border-gray-600/50 text-white"
+                            placeholder="https://example.com/image.jpg"
                           />
                         </div>
-                        </div>
-                <DialogFooter>
-                          <Button 
-                            type="submit"
-                    onClick={handleUpdateProfile}
-                    className="bg-[#f97316] hover:bg-[#ea580c]"
-                          >
-                    Save changes
-                          </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-            )}
-                        </div>
-
-          {/* Main Header Bar */}
-          <div className="flex items-center justify-between rounded-full bg-white/40 dark:bg-[#2A2827]/40 backdrop-blur-md border border-white/20 dark:border-gray-700/20 shadow-lg overflow-hidden mt-10 h-[72px] w-full">
-            {/* Profile Info - Left side */}
-            <div className="flex items-center gap-4 pl-4 pr-10 border-r border-[#2A3447]/70 h-full">
-              <Avatar className="w-14 h-14 ring-2 ring-white/20">
-                <AvatarImage src={profile?.profilePicture} />
-                <AvatarFallback>{profile?.username?.[0]}</AvatarFallback>
-              </Avatar>
-              <div>
-                <h2 className="text-lg font-semibold">{profile?.username || "Stinger_16"}</h2>
-                <span className="text-sm text-gray-400">2 months on the platform</span>
-                      </div>
-                  </div>
-
-            {/* Stats Section - Center */}
-            <div className="flex items-center justify-center flex-1 h-full border-r border-[#2A3447]/70">
-              {/* Stats pill container */}
-              <div className="bg-white/30 dark:bg-[#232e47]/30 backdrop-blur-md border border-white/10 dark:border-gray-700/10 rounded-full px-10 py-2">
-                <div className="grid grid-cols-3 gap-10">
-                  <div className="text-center">
-                    <div className="text-xs text-gray-400">Total Books Read</div>
-                    <div className="text-lg font-semibold">27</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-xs text-gray-400">Pages This Week</div>
-                    <div className="text-lg font-semibold">342</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-xs text-gray-400">Reading Streak</div>
-                    <div className="text-lg font-semibold">5 days</div>
-                  </div>
-                    </div>
-                    </div>
-                    </div>
-                    
-            {/* Social Links - Right Side */}
-            <div className="flex gap-2 px-4">
-              <Link href="https://discord.gg" className="w-10 h-10 bg-white/20 dark:bg-[#2A3447]/40 backdrop-blur-md border border-white/10 dark:border-gray-700/10 rounded-full flex items-center justify-center">
-                <FaDiscord className="w-5 h-5 text-gray-400" />
-              </Link>
-              <Link href="https://twitter.com" className="w-10 h-10 bg-white/20 dark:bg-[#2A3447]/40 backdrop-blur-md border border-white/10 dark:border-gray-700/10 rounded-full flex items-center justify-center">
-                <FaTwitter className="w-5 h-5 text-orange-400" />
-              </Link>
-            </div>
+                        
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">Favorite Genres</Label>
+                          <div className="grid grid-cols-2 gap-2">
+                            {availableGenres.map((genre) => (
+                              <div key={genre.id} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={genre.id}
+                                  checked={editFormData.favoriteGenres.includes(genre.id)}
+                                  onCheckedChange={() => handleGenreToggle(genre.id)}
+                                  className="border-gray-600"
+                                />
+                                <Label htmlFor={genre.id} className="text-sm text-gray-300">
+                                  {genre.label}
+                                </Label>
+                              </div>
+                            ))}
                           </div>
                         </div>
-                    </div>
+                      </div>
+                      
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsEditProfileOpen(false)} className="border-gray-600 text-gray-300 hover:bg-gray-700/50">
+                          Cancel
+                        </Button>
+                        <Button onClick={handleUpdateProfile} className="bg-orange-500 hover:bg-orange-600 text-white">
+                          Save Changes
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </div>
 
-      {/* Rest of the content */}
-      <div className="container max-w-[1200px] mx-auto py-8">
-        {/* Main Content */}
-        <div className="grid grid-cols-12 gap-4">
+              <p className="text-gray-300 mb-4 max-w-2xl">{profile.bio || 'No bio available.'}</p>
+
+              {/* Social Links */}
+              <div className="flex items-center gap-4">
+                <Button variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-700/50">
+                  <FaDiscord className="w-4 h-4 mr-2" />
+                  Discord
+                </Button>
+                <Button variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-700/50">
+                  <FaTwitter className="w-4 h-4 mr-2" />
+                  Twitter
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-12 gap-4 mb-8">
           {/* Left Column */}
           <div className="col-span-3">
-            <div className="bg-white/40 dark:bg-[#1A2234]/40 backdrop-blur-md border border-white/20 dark:border-gray-700/20 shadow-lg rounded-xl p-4 h-full flex flex-col">
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3">Bio</h3>
-                <div className="h-[100px] overflow-y-auto pr-2 text-gray-400 text-sm">
-                  {profile?.bio || "Hello! My Name Is Stinger_18 But Some People May Know Me As Game Hunter! I Have A Twitch Channel Where I Stream, Play And Review All The Newest Games."}
+            <div className="bg-white/40 dark:bg-[#1A2234]/40 backdrop-blur-md border border-white/20 dark:border-gray-700/20 shadow-lg rounded-xl p-4 h-full">
+              <h3 className="text-lg font-semibold mb-4">Reading Stats</h3>
+              <div className="space-y-4">
+                <div className="bg-white/30 dark:bg-[#2A3447]/30 backdrop-blur-md border border-white/10 dark:border-gray-700/10 rounded-xl p-3">
+                  <div className="text-2xl font-bold text-orange-400">{profile.totalBooks || 0}</div>
+                  <div className="text-sm text-gray-400">Total Books</div>
                 </div>
-              </div>
-                        
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Favorite Genres</h3>
-                <div className="flex flex-wrap gap-2">
-                  {profile?.favoriteGenres?.length ? (
-                    profile.favoriteGenres.map((genre, index) => {
-                      // Get color based on genre name
-                      let color;
-                      switch(genre.toLowerCase()) {
-                        case 'fantasy':
-                          color = 'orange';
-                          break;
-                        case 'romance':
-                          color = 'gray';
-                          break;
-                        case 'sci-fi':
-                        case 'science fiction':
-                          color = 'slate';
-                          break;
-                        case 'mystery':
-                          color = 'zinc';
-                          break;
-                        case 'horror':
-                          color = 'stone';
-                          break;
-                        case 'adventure':
-                          color = 'gray';
-                          break;
-                        default:
-                          color = 'gray';
-                      }
-                      
-                      return (
-                        <div 
-                          key={index}
-                          className={`px-2 py-1 rounded-full text-xs bg-${color}-500/20 text-${color}-400`}
-                        >
-                          {genre}
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <span className="text-sm text-gray-400">No favorite genres set</span>
-                  )}
+                <div className="bg-white/30 dark:bg-[#2A3447]/30 backdrop-blur-md border border-white/10 dark:border-gray-700/10 rounded-xl p-3">
+                  <div className="text-2xl font-bold text-green-400">{profile.completionRate || 0}%</div>
+                  <div className="text-sm text-gray-400">Completion Rate</div>
+                </div>
+                <div className="bg-white/30 dark:bg-[#2A3447]/30 backdrop-blur-md border border-white/10 dark:border-gray-700/10 rounded-xl p-3">
+                  <div className="text-2xl font-bold text-red-400">{profile.dropRate || 0}%</div>
+                  <div className="text-sm text-gray-400">Drop Rate</div>
+                </div>
+                <div className="bg-white/30 dark:bg-[#2A3447]/30 backdrop-blur-md border border-white/10 dark:border-gray-700/10 rounded-xl p-3">
+                  <div className="text-2xl font-bold text-purple-400">Lv.{profile.level || 1}</div>
+                  <div className="text-sm text-gray-400">Reader Level</div>
                 </div>
               </div>
             </div>
@@ -780,21 +671,21 @@ export default function UserProfilePage() {
                               ) : (
                                 <div className="w-full h-full bg-gray-700" />
                               )}
-                      </div>
+                            </div>
                             <div>
                               <div className="font-medium text-white">{novel.title}</div>
                               <div className="text-xs text-gray-400">
                                 {novel.progress?.percentage ? `${novel.progress.percentage}% complete` : "Not started"}
-                    </div>
-                  </div>
-                      </div>
+                              </div>
+                            </div>
+                          </div>
                         </td>
                         <td className="py-4">
                           <div className="px-2 py-1 rounded-md inline-block bg-[#f97316]/20 backdrop-blur-sm text-[#f97316] border border-[#f97316]/10">
                             {novel.lastRead ? 
                               `${Math.floor((Date.now() - novel.lastRead.toDate().getTime()) / (1000 * 60 * 60 * 24))} days` : 
                               "No activity"}
-                    </div>
+                          </div>
                         </td>
                         <td className="py-4">
                           <div className="text-gray-300 flex flex-wrap gap-1">
@@ -810,7 +701,7 @@ export default function UserProfilePage() {
                               )) 
                               : <span className="text-xs text-gray-400">No genres</span>
                             }
-                  </div>
+                          </div>
                         </td>
                         <td className="py-4">
                           <Link href={`/novel/${novel.novelId}`}>
@@ -829,15 +720,15 @@ export default function UserProfilePage() {
                           <Link href="/browse" className="text-orange-400 hover:text-orange-300">
                             Browse novels to add to your library
                           </Link>
-                      </div>
+                        </div>
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
-                    </div>
-                    </div>
-                  </div>
+            </div>
+          </div>
+        </div>
 
         {/* Recommendations Section */}
         <div className="mt-8">
@@ -888,5 +779,25 @@ export default function UserProfilePage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// Loading component for Suspense fallback
+function UserProfileLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#0F1419] via-[#1A2234] to-[#0F1419] flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-500 mx-auto mb-4"></div>
+        <p className="text-gray-400">Loading profile...</p>
+      </div>
+    </div>
+  )
+}
+
+export default function UserProfilePage() {
+  return (
+    <Suspense fallback={<UserProfileLoading />}>
+      <UserProfileContent />
+    </Suspense>
   )
 }
