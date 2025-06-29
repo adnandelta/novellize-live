@@ -12,6 +12,7 @@ import Image from 'next/image'
 import { FaDiscord, FaTwitter, FaEdit } from 'react-icons/fa'
 import dynamic from 'next/dynamic'
 import { Button } from "@/components/ui/button"
+import { useSearchParams } from 'next/navigation'
 import {
   Dialog,
   DialogContent,
@@ -104,6 +105,9 @@ export default function UserProfilePage() {
     favoriteGenres: [] as string[]
   })
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const viewingUserId = searchParams.get('userId') // Get userId from URL params
+  const isViewingOwnProfile = !viewingUserId || viewingUserId === user?.uid
 
   // Available genres
   const availableGenres = [
@@ -215,22 +219,26 @@ export default function UserProfilePage() {
   }, [profile])
 
   useEffect(() => {
-    if (user) {
+    if (user || viewingUserId) {
       fetchUserProfile()
+      fetchFollowedNovels()
+      fetchRecommendations()
     }
-  }, [user])
+  }, [user, viewingUserId])
 
   const fetchUserProfile = async () => {
-    if (!user) return
+    const targetUserId = viewingUserId || user?.uid
+    if (!targetUserId) return
+    
     try {
-      const userDoc = await getDoc(doc(db, 'users', user.uid))
+      const userDoc = await getDoc(doc(db, 'users', targetUserId))
       if (userDoc.exists()) {
         const userData = userDoc.data() as UserProfile
         setProfile(userData)
         
-        // Redirect to author profile if user is an author
-        if (userData.userType === 'author') {
-          router.push(`/author/${user.uid}`)
+        // Only redirect to author profile if viewing own profile and user is an author
+        if (isViewingOwnProfile && userData.userType === 'author') {
+          router.push(`/author/${targetUserId}`)
           return
         }
       }
@@ -242,14 +250,15 @@ export default function UserProfilePage() {
   }
 
   const fetchFollowedNovels = async () => {
-    if (!user) return
+    const targetUserId = viewingUserId || user?.uid
+    if (!targetUserId) return
     try {
-      console.log('Fetching followed novels for user:', user.uid)
+      console.log('Fetching followed novels for user:', targetUserId)
       
       // Try multiple approaches to fetch followed novels
 
       // Approach 1: Check if user has followedNovels directly in user document
-      const userRef = doc(db, 'users', user.uid)
+      const userRef = doc(db, 'users', targetUserId)
       const userDoc = await getDoc(userRef)
       
       if (userDoc.exists() && userDoc.data().followedNovels && userDoc.data().followedNovels.length > 0) {
@@ -282,7 +291,7 @@ export default function UserProfilePage() {
       
       // Approach 2: Check for following collection
       console.log('Trying following collection approach')
-      const followingRef = collection(db, 'users', user.uid, 'following')
+      const followingRef = collection(db, 'users', targetUserId, 'following')
       const followingSnapshot = await getDocs(followingRef)
       
       if (!followingSnapshot.empty) {
@@ -307,7 +316,7 @@ export default function UserProfilePage() {
       
       // Approach 3: Check library collection
       console.log('Trying library collection approach')
-      const libraryRef = doc(db, 'library', user.uid)
+      const libraryRef = doc(db, 'library', targetUserId)
       const libraryDoc = await getDoc(libraryRef)
       
       if (libraryDoc.exists() && libraryDoc.data().followedNovels) {
@@ -488,13 +497,14 @@ export default function UserProfilePage() {
               </Link>
               <span className="text-sm text-gray-300">Level {profile?.level || 23}</span>
             </div>
-            <Dialog open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen}>
-                  <DialogTrigger asChild>
-                <Button size="sm" className="bg-[#f97316] hover:bg-[#ea580c] text-white px-4 py-1 rounded-full text-sm flex items-center gap-2">
-                  <FaEdit className="w-3 h-3" />
-                  Edit Profile
-                      </Button>
-                  </DialogTrigger>
+            {isViewingOwnProfile && (
+              <Dialog open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen}>
+                    <DialogTrigger asChild>
+                  <Button size="sm" className="bg-[#f97316] hover:bg-[#ea580c] text-white px-4 py-1 rounded-full text-sm flex items-center gap-2">
+                    <FaEdit className="w-3 h-3" />
+                    Edit Profile
+                        </Button>
+                    </DialogTrigger>
               <DialogContent className="sm:max-w-[425px] bg-[#1A2234] text-white border-[#2A3447]">
                     <DialogHeader>
                   <DialogTitle>Edit Profile</DialogTitle>
@@ -568,6 +578,7 @@ export default function UserProfilePage() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+            )}
                         </div>
 
           {/* Main Header Bar */}
