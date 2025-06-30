@@ -52,6 +52,7 @@ import { YouMayAlsoLikeSection } from '@/components/YouMayAlsoLikeSection'
 import InitialLoader from '@/components/InitialLoader'
 import { AuthorRequestSection } from '@/components/AuthorRequestSection'
 import { FAQSection } from '@/components/FAQSection'
+import HeroCarousel from '@/components/HeroCarousel'
 import { Toaster } from 'sonner'
 import { 
   trackPageView, 
@@ -997,7 +998,8 @@ export default function ModernLightNovelsHomepage() {
 
           <main className="flex-grow">
             <Toaster position="top-center" />
-            <section className="relative py-8 overflow-hidden">
+            
+            <section className="relative py-4 overflow-hidden">
               {/* Hero Section with Background */}
               <div className="absolute inset-0 z-0">
                 <Image
@@ -1015,28 +1017,28 @@ export default function ModernLightNovelsHomepage() {
 
               {/* Hero Content */}
               <div className="container mx-auto px-4 sm:px-6 relative z-2">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
                   {/* Left column: Logo and Brand */}
-                  <div className="w-full md:w-1/2 flex flex-col items-center md:items-start space-y-6">
+                  <div className="w-full md:w-1/2 flex flex-col items-center md:items-start space-y-4">
                     <Image
                       src="/assets/favicon.png"
                       alt="Company Logo"
-                      width={200}
-                      height={200}
-                      className="md:w-[300px] md:h-[300px] p-2"
+                      width={150}
+                      height={150}
+                      className="md:w-[200px] md:h-[200px] p-2"
                       priority
                     />
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#F1592A] text-center md:text-left rounded-md bg-opacity-60 bg-gray-200 dark:bg-opacity-60 dark:bg-[#232120] pb-2 pt-1 px-3">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-[#F1592A] text-center md:text-left rounded-md bg-opacity-60 bg-gray-200 dark:bg-opacity-60 dark:bg-[#232120] pb-2 pt-1 px-3">
                       Novellize
                     </h1>
                   </div>
 
                   {/* Right column: Company Description */}
-                  <div className="w-full md:w-1/2 dark:text-[#E7E7E8] text-[#232120] space-y-4 md:space-y-6">
-                    <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold dark:text-[#E7E7E8] text-[#232120] text-center md:text-left">
+                  <div className="w-full md:w-1/2 dark:text-[#E7E7E8] text-[#232120] space-y-3 md:space-y-4">
+                    <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold dark:text-[#E7E7E8] text-[#232120] text-center md:text-left">
                       Discover Your Next Adventure
                     </h2>
-                    <p className="text-sm sm:text-base md:text-lg lg:text-xl dark:text-[#E7E7E8] text-[#232120] text-center md:text-left">
+                    <p className="text-sm sm:text-base md:text-lg dark:text-[#E7E7E8] text-[#232120] text-center md:text-left">
                       Welcome to Novellize, your ultimate destination for discovering and exploring a vast collection of web novels from diverse genres and authors worldwide. 
                     </p>
                     <p className="text-sm sm:text-base md:text-lg dark:text-[#E7E7E8] text-[#232120] text-center md:text-left">
@@ -1142,6 +1144,9 @@ export default function ModernLightNovelsHomepage() {
                 </div>
               </div>
             </section>
+
+            {/* Hero Carousel Section */}
+            <HeroCarousel loading={dataLoading} />
 
             {/* Trending Section */}
             <section id="trending" className="">

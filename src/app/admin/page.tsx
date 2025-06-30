@@ -962,6 +962,16 @@ export default function AdminDashboard() {
                       </Button>
                     </motion.div>
                   </Link>
+                  <Link href="/admin/hero-carousel" passHref>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button variant="outline" className="bg-gradient-to-r from-[#2A2827] to-[#333] border-[#444] text-white hover:from-[#3A3837] hover:to-[#444] transition-all duration-300">
+                        <BookOpen className="mr-2 h-4 w-4" /> Hero Carousel
+                      </Button>
+                    </motion.div>
+                  </Link>
                   <Link href="/admin/ranking-novels" passHref>
                     <motion.div
                       whileHover={{ scale: 1.05 }}
