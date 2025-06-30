@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Moon, Sun, LogOut, User, Plus, Home, Image as ImageIcon, MessageSquare, ChevronRight, ChevronsLeftRight, Flame, BookOpen, Crown, Sparkles, Menu, X, Library, Trash2, Edit } from "lucide-react"
+import { Search, Moon, Sun, LogOut, User, Plus, Home, Image as ImageIcon, MessageSquare, ChevronRight, ChevronsLeftRight, Flame, BookOpen, Crown, Sparkles, Menu, X, Library, Trash2, Edit, ExternalLink, Download, Star, Eye, Clock, FileText, Link as LinkIcon, Wrench, FileImage } from "lucide-react"
 import Link from "next/link"
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -65,6 +65,29 @@ section: string
 replies: Reply[]
 image?: string
 repliesCount: number
+}
+
+interface Resource {
+  id: string
+  title: string
+  description: string
+  content: string
+  type: 'blog' | 'link' | 'guide' | 'tool' | 'template'
+  category: string
+  tags: string[]
+  author: string
+  authorId: string
+  createdAt: Timestamp
+  updatedAt: Timestamp
+  externalUrl?: string
+  downloadUrl?: string
+  featured: boolean
+  views: number
+  likes: string[]
+  bookmarks: string[]
+  difficulty: 'beginner' | 'intermediate' | 'advanced'
+  estimatedReadTime: number
+  image?: string
 }
 
 const ThemeToggle = () => {
@@ -214,6 +237,7 @@ if (typeof document !== 'undefined') {
 export default function ForumsPage() {
 const [mounted, setMounted] = useState(false)
 const [posts, setPosts] = useState<ForumPost[]>([])
+const [resources, setResources] = useState<Resource[]>([])
 const [loading, setLoading] = useState(true)
 const { user } = useAuth()
 const router = useRouter()
@@ -278,6 +302,21 @@ const fetchPosts = async () => {
     toast.error('Failed to load forum posts')
   }
   setLoading(false)
+}
+
+const fetchResources = async () => {
+  try {
+    const q = query(collection(db, 'resources'), orderBy('createdAt', 'desc'))
+    const querySnapshot = await getDocs(q)
+    const fetchedResources = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Resource[]
+    setResources(fetchedResources)
+  } catch (error) {
+    console.error('Error fetching resources:', error)
+    toast.error('Failed to load resources')
+  }
 }
 
 const fetchUserProfile = async () => {
@@ -395,7 +434,7 @@ const variants = {
 };
 
 const handleTabChange = (newTab: string) => {
-  const tabOrder = ["announcements", "general", "updates", "community"];
+  const tabOrder = ["announcements", "general", "updates", "community", "resources"];
   const currentIndex = tabOrder.indexOf(activeTab);
   const newIndex = tabOrder.indexOf(newTab);
   setDirection(newIndex > currentIndex ? 1 : -1);
@@ -565,6 +604,232 @@ const renderPosts = (section: string) => {
   )
 }
 
+const getTypeIcon = (type: string) => {
+  switch (type) {
+    case 'blog': return FileText
+    case 'link': return LinkIcon
+    case 'guide': return BookOpen
+    case 'tool': return Wrench
+    case 'template': return FileImage
+    default: return FileText
+  }
+}
+
+const getDifficultyColor = (difficulty: string) => {
+  switch (difficulty) {
+    case 'beginner': return 'bg-green-500'
+    case 'intermediate': return 'bg-yellow-500'
+    case 'advanced': return 'bg-red-500'
+    default: return 'bg-gray-500'
+  }
+}
+
+const renderResources = () => {
+  const featuredResources = resources.filter(resource => resource.featured)
+  const regularResources = resources.filter(resource => !resource.featured)
+
+  return (
+    <div className="space-y-8 p-2 sm:p-4">
+      {/* Header with Resources Homepage Button */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-[#232120] dark:text-[#E7E7E8] mb-2">
+            Writing Resources
+          </h2>
+          <p className="text-[#8E8F8E] dark:text-[#C3C3C3]">
+            Discover guides, tools, and resources to improve your writing
+          </p>
+        </div>
+        
+        <Link href="/forum/resources">
+          <Button className="relative group px-6 py-3 rounded-2xl font-semibold text-white
+            bg-gradient-to-r from-[#F1592A] to-[#D14820] 
+            shadow-lg shadow-[#F1592A]/25 hover:shadow-xl hover:shadow-[#F1592A]/40
+            hover:scale-105 transition-all duration-300 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#D14820] to-[#F1592A] 
+              opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative z-10 flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              <span>Browse All Resources</span>
+              <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+            </div>
+          </Button>
+        </Link>
+      </div>
+      {/* Featured Resources */}
+      {featuredResources.length > 0 && (
+        <div>
+          <h3 className="text-xl font-bold text-[#232120] dark:text-[#E7E7E8] mb-4 flex items-center gap-2">
+            <Star className="h-5 w-5 text-yellow-500" />
+            Featured Resources
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {featuredResources.map((resource) => {
+              const TypeIcon = getTypeIcon(resource.type)
+              return (
+                <motion.div
+                  key={resource.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                >
+                  <Link href={`/forum/resources/${resource.id}`}>
+                    <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl 
+                      bg-gradient-to-r from-white/10 to-white/5 dark:from-slate-900/10 dark:to-slate-800/5
+                      hover:from-white/20 hover:to-white/10 dark:hover:from-slate-900/20 dark:hover:to-slate-800/10
+                      border border-white/20 dark:border-slate-700/30 hover:border-[#F1592A]/40
+                      shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-[#F1592A]/10
+                      transition-all duration-300 ease-in-out cursor-pointer">
+                      
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#F1592A]/3 to-transparent opacity-0 
+                        group-hover:opacity-100 transition-opacity duration-300" />
+                      
+                      <div className="relative z-10 p-6">
+                        <div className="flex items-start gap-4">
+                          {resource.image && (
+                            <div className="relative w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg">
+                              <Image
+                                src={resource.image}
+                                alt={resource.title}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            </div>
+                          )}
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2">
+                              <TypeIcon className="h-4 w-4 text-[#F1592A]" />
+                              <Badge variant="outline" className="text-xs">
+                                {resource.category}
+                              </Badge>
+                              <div className={`w-2 h-2 rounded-full ${getDifficultyColor(resource.difficulty)}`} />
+                              <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3] capitalize">
+                                {resource.difficulty}
+                              </span>
+                            </div>
+                            
+                            <h4 className="text-lg font-bold text-[#232120] dark:text-[#E7E7E8] group-hover:text-[#F1592A] transition-colors duration-300 mb-2">
+                              {resource.title}
+                            </h4>
+                            
+                            <p className="text-sm text-[#8E8F8E] dark:text-[#C3C3C3] line-clamp-2 mb-3">
+                              {resource.description}
+                            </p>
+                            
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4 text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
+                                <div className="flex items-center gap-1">
+                                  <Eye className="h-3 w-3" />
+                                  <span>{resource.views}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  <span>{resource.estimatedReadTime} min</span>
+                                </div>
+                              </div>
+                              
+                              {resource.externalUrl && (
+                                <ExternalLink className="h-4 w-4 text-[#F1592A] group-hover:scale-110 transition-transform duration-200" />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Regular Resources */}
+      <div>
+        <h3 className="text-xl font-bold text-[#232120] dark:text-[#E7E7E8] mb-4 flex items-center gap-2">
+          <BookOpen className="h-5 w-5 text-[#F1592A]" />
+          All Resources
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {regularResources.map((resource) => {
+            const TypeIcon = getTypeIcon(resource.type)
+            return (
+              <motion.div
+                key={resource.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              >
+                <Link href={`/forum/resources/${resource.id}`}>
+                  <div className="group relative overflow-hidden rounded-xl backdrop-blur-xl 
+                    bg-gradient-to-r from-white/10 to-white/5 dark:from-slate-900/10 dark:to-slate-800/5
+                    hover:from-white/20 hover:to-white/10 dark:hover:from-slate-900/20 dark:hover:to-slate-800/10
+                    border border-white/20 dark:border-slate-700/30 hover:border-[#F1592A]/40
+                    shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-[#F1592A]/10
+                    transition-all duration-300 ease-in-out cursor-pointer">
+                    
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#F1592A]/3 to-transparent opacity-0 
+                      group-hover:opacity-100 transition-opacity duration-300" />
+                    
+                    <div className="relative z-10 p-4">
+                      {resource.image && (
+                        <div className="relative w-full h-32 mb-4 overflow-hidden rounded-lg">
+                          <Image
+                            src={resource.image}
+                            alt={resource.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center gap-2 mb-2">
+                        <TypeIcon className="h-4 w-4 text-[#F1592A]" />
+                        <Badge variant="outline" className="text-xs">
+                          {resource.category}
+                        </Badge>
+                        <div className={`w-2 h-2 rounded-full ${getDifficultyColor(resource.difficulty)}`} />
+                      </div>
+                      
+                      <h4 className="text-base font-bold text-[#232120] dark:text-[#E7E7E8] group-hover:text-[#F1592A] transition-colors duration-300 mb-2">
+                        {resource.title}
+                      </h4>
+                      
+                      <p className="text-sm text-[#8E8F8E] dark:text-[#C3C3C3] line-clamp-2 mb-3">
+                        {resource.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
+                          <div className="flex items-center gap-1">
+                            <Eye className="h-3 w-3" />
+                            <span>{resource.views}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            <span>{resource.estimatedReadTime} min</span>
+                          </div>
+                        </div>
+                        
+                        {resource.externalUrl && (
+                          <ExternalLink className="h-4 w-4 text-[#F1592A] group-hover:scale-110 transition-transform duration-200" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const fetchAuthorProfiles = async (posts: ForumPost[]) => {
   const profiles: {[key: string]: {profilePicture: string, username: string}} = {}
   const seenAuthorIds: {[key: string]: boolean} = {}
@@ -598,6 +863,7 @@ useEffect(() => {
   if (tab) setActiveTab(tab)
   if (scrollTo) setScrollToPostId(scrollTo)
   fetchPosts()
+  fetchResources()
   if (user) {
     fetchUserProfile()
   }
@@ -1133,7 +1399,7 @@ return (
                   <div className="relative p-1 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm 
                     rounded-2xl border border-white/20 dark:border-slate-700/50 shadow-lg">
                     <div className="flex items-center space-x-1">
-                      {["announcements", "general", "updates", "community"].map((tab) => (
+                      {["announcements", "general", "updates", "community", "resources"].map((tab) => (
                     <motion.button
                       key={tab}
                       onClick={() => handleTabChange(tab)}
@@ -1158,6 +1424,7 @@ return (
                             {tab === 'general' && '💬'}
                             {tab === 'updates' && '🔄'}
                             {tab === 'community' && '👥'}
+                            {tab === 'resources' && '📚'}
                             {tab}
                       </span>
                     </motion.button>
@@ -1185,7 +1452,7 @@ return (
                   >
                   <ScrollArea className="h-[calc(100vh-24rem)]">
                     <div className="space-y-6 pb-6">
-                        {renderPosts(activeTab)}
+                        {activeTab === 'resources' ? renderResources() : renderPosts(activeTab)}
                       </div>
                     </ScrollArea>
                 </motion.div>
@@ -1198,6 +1465,72 @@ return (
           <div className="hidden lg:block fixed top-20 right-0 w-80 h-[calc(100vh-5rem)] overflow-y-auto z-40 
             bg-[#F8F8F8]/95 dark:bg-[#1A1918]/95 backdrop-blur-xl border-l border-[#F1592A]/20">
             <div className="p-6 space-y-6">
+              {/* Featured Resources */}
+              <div className="relative overflow-hidden rounded-xl backdrop-blur-xl 
+                bg-gradient-to-r from-white/80 to-white/60 dark:from-[#232120]/80 dark:to-[#232120]/60
+                border border-[#F1592A]/20 shadow-lg mb-6">
+                <div className="absolute inset-0 bg-gradient-to-r from-[#F1592A]/5 to-transparent opacity-50" />
+                
+                <div className="relative z-10 p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 
+                      flex items-center justify-center shadow-lg">
+                      <BookOpen className="w-4 h-4 text-white" />
+                    </div>
+                    <h3 className="text-lg font-bold text-[#232120] dark:text-[#E7E7E8]">
+                      Featured Resources
+                    </h3>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {resources.filter(r => r.featured).slice(0, 3).map((resource, index) => {
+                      const TypeIcon = getTypeIcon(resource.type)
+                      return (
+                        <motion.div
+                          key={resource.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="flex items-start gap-3 p-3 rounded-lg hover:bg-[#F1592A]/5 transition-colors duration-200 cursor-pointer"
+                          onClick={() => {
+                            router.push(`/forum/resources/${resource.id}`)
+                          }}
+                        >
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/20 to-purple-600/20 
+                            flex items-center justify-center text-sm font-medium">
+                            <TypeIcon className="w-4 h-4 text-purple-500" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-[#232120] dark:text-[#E7E7E8] line-clamp-2">
+                              {resource.title}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <p className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
+                                {resource.category}
+                              </p>
+                              <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">•</span>
+                              <span className="text-xs text-[#F1592A] font-medium">
+                                {resource.estimatedReadTime} min read
+                              </span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )
+                    })}
+                    
+                    <Link href="/forum?tab=resources">
+                      <div className="mt-4 p-3 rounded-lg bg-gradient-to-r from-[#F1592A]/10 to-[#D14820]/10 
+                        hover:from-[#F1592A]/20 hover:to-[#D14820]/20 border border-[#F1592A]/20 
+                        text-center transition-all duration-300 cursor-pointer group">
+                        <span className="text-sm font-medium text-[#F1592A] group-hover:text-[#D14820]">
+                          View All Resources
+                        </span>
+                      </div>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
               {/* Latest Replies */}
               <div className="relative overflow-hidden rounded-xl backdrop-blur-xl 
                 bg-gradient-to-r from-white/80 to-white/60 dark:from-[#232120]/80 dark:to-[#232120]/60
@@ -1292,7 +1625,7 @@ return (
                 <div className="p-6 space-y-6">
                   {/* Close Button */}
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-[#232120] dark:text-[#E7E7E8]">Latest Replies</h2>
+                    <h2 className="text-xl font-bold text-[#232120] dark:text-[#E7E7E8]">Forum Sidebar</h2>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -1301,6 +1634,75 @@ return (
                     >
                       <X className="h-5 w-5 text-[#232120] dark:text-[#E7E7E8]" />
                     </Button>
+                  </div>
+
+                  {/* Featured Resources */}
+                  <div className="relative overflow-hidden rounded-xl backdrop-blur-xl 
+                    bg-gradient-to-r from-white/80 to-white/60 dark:from-[#232120]/80 dark:to-[#232120]/60
+                    border border-[#F1592A]/20 shadow-lg mb-6">
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#F1592A]/5 to-transparent opacity-50" />
+                    
+                    <div className="relative z-10 p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 
+                          flex items-center justify-center shadow-lg">
+                          <BookOpen className="w-4 h-4 text-white" />
+                        </div>
+                        <h3 className="text-lg font-bold text-[#232120] dark:text-[#E7E7E8]">
+                          Featured Resources
+                        </h3>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        {resources.filter(r => r.featured).slice(0, 3).map((resource, index) => {
+                          const TypeIcon = getTypeIcon(resource.type)
+                          return (
+                            <motion.div
+                              key={resource.id}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              className="flex items-start gap-3 p-3 rounded-lg hover:bg-[#F1592A]/5 transition-colors duration-200 cursor-pointer"
+                              onClick={() => {
+                                router.push(`/forum/resources/${resource.id}`)
+                                setIsMobileSidebarOpen(false)
+                              }}
+                            >
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/20 to-purple-600/20 
+                                flex items-center justify-center text-sm font-medium">
+                                <TypeIcon className="w-4 h-4 text-purple-500" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-[#232120] dark:text-[#E7E7E8] line-clamp-2">
+                                  {resource.title}
+                                </p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <p className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
+                                    {resource.category}
+                                  </p>
+                                  <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">•</span>
+                                  <span className="text-xs text-[#F1592A] font-medium">
+                                    {resource.estimatedReadTime} min read
+                                  </span>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )
+                        })}
+                        
+                        <Link href="/forum?tab=resources">
+                          <div className="mt-4 p-3 rounded-lg bg-gradient-to-r from-[#F1592A]/10 to-[#D14820]/10 
+                            hover:from-[#F1592A]/20 hover:to-[#D14820]/20 border border-[#F1592A]/20 
+                            text-center transition-all duration-300 cursor-pointer group"
+                            onClick={() => setIsMobileSidebarOpen(false)}
+                          >
+                            <span className="text-sm font-medium text-[#F1592A] group-hover:text-[#D14820]">
+                              View All Resources
+                            </span>
+                          </div>
+                        </Link>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Latest Replies */}

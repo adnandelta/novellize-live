@@ -1525,6 +1525,83 @@ export default function AdminDashboard() {
           </motion.div>
         </motion.div>
 
+        {/* Quick Actions */}
+        <motion.div 
+          className="mb-8"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
+          <motion.h3 
+            className="text-xl font-bold text-white mb-4 flex items-center gap-2"
+            variants={itemVariants}
+          >
+            <Sparkles className="h-5 w-5 text-[#F1592A]" />
+            Quick Actions
+          </motion.h3>
+          
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+            variants={containerVariants}
+          >
+            <motion.div variants={itemVariants}>
+              <Link href="/admin/resources">
+                <div className="group p-6 bg-gradient-to-br from-[#232120] to-[#2A2827] rounded-lg border border-[#333] hover:border-[#F1592A]/50 transition-all duration-300 hover:scale-105 shadow-lg cursor-pointer">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center group-hover:from-purple-500/30 group-hover:to-purple-600/30 transition-colors">
+                      <BookOpen className="h-5 w-5 text-purple-400" />
+                    </div>
+                    <h4 className="text-white font-medium group-hover:text-[#F1592A] transition-colors">Resources</h4>
+                  </div>
+                  <p className="text-gray-400 text-sm">Manage forum resources and guides</p>
+                </div>
+              </Link>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <Link href="/admin/users">
+                <div className="group p-6 bg-gradient-to-br from-[#232120] to-[#2A2827] rounded-lg border border-[#333] hover:border-[#F1592A]/50 transition-all duration-300 hover:scale-105 shadow-lg cursor-pointer">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center group-hover:from-green-500/30 group-hover:to-green-600/30 transition-colors">
+                      <User className="h-5 w-5 text-green-400" />
+                    </div>
+                    <h4 className="text-white font-medium group-hover:text-[#F1592A] transition-colors">Users</h4>
+                  </div>
+                  <p className="text-gray-400 text-sm">Manage user accounts and permissions</p>
+                </div>
+              </Link>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <Link href="/admin/featured-novels">
+                <div className="group p-6 bg-gradient-to-br from-[#232120] to-[#2A2827] rounded-lg border border-[#333] hover:border-[#F1592A]/50 transition-all duration-300 hover:scale-105 shadow-lg cursor-pointer">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 flex items-center justify-center group-hover:from-yellow-500/30 group-hover:to-yellow-600/30 transition-colors">
+                      <Star className="h-5 w-5 text-yellow-400" />
+                    </div>
+                    <h4 className="text-white font-medium group-hover:text-[#F1592A] transition-colors">Featured</h4>
+                  </div>
+                  <p className="text-gray-400 text-sm">Manage featured novels</p>
+                </div>
+              </Link>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <Link href="/admin/hero-carousel">
+                <div className="group p-6 bg-gradient-to-br from-[#232120] to-[#2A2827] rounded-lg border border-[#333] hover:border-[#F1592A]/50 transition-all duration-300 hover:scale-105 shadow-lg cursor-pointer">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center group-hover:from-blue-500/30 group-hover:to-blue-600/30 transition-colors">
+                      <Eye className="h-5 w-5 text-blue-400" />
+                    </div>
+                    <h4 className="text-white font-medium group-hover:text-[#F1592A] transition-colors">Carousel</h4>
+                  </div>
+                  <p className="text-gray-400 text-sm">Manage hero carousel content</p>
+                </div>
+              </Link>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+
         {/* Charts Grid */}
         <motion.div 
           className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8"

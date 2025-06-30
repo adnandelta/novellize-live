@@ -747,48 +747,61 @@ export default function ResourcesPage() {
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-16"
+            className="mb-16"
           >
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-[#F1592A]/10 to-[#D14820]/10 rounded-3xl blur-3xl" />
-              <div className="relative bg-white/5 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-12 border border-white/10">
-                <motion.div
-                  initial={{ scale: 0.9 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#F1592A] to-[#D14820] rounded-2xl mb-6"
-                >
-                  <Library className="h-10 w-10 text-white" />
-                </motion.div>
-                
-                <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                  Author Resources <span className="text-[#F1592A]">Hub</span>
-                </h1>
-                
-                <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-                  Discover curated resources, tools, and guides to enhance your writing journey. 
-                  From beginner tips to advanced techniques, find everything you need to craft compelling stories.
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                    <Input
-                      placeholder="Search resources..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 
-                        focus:border-[#F1592A]/50 focus:ring-[#F1592A]/20"
-                    />
+            {/* Hero Header */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900/80 to-slate-800/80 backdrop-blur-xl border border-white/10">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#F1592A]/5 to-[#D14820]/5" />
+              
+              <div className="relative px-6 py-12 md:px-12">
+                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                  {/* Left side - Title and description */}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-1 h-8 bg-gradient-to-b from-[#F1592A] to-[#D14820] rounded-full" />
+                      <div>
+                        <h1 className="text-2xl lg:text-3xl font-bold text-white">
+                          Writing Resources
+                        </h1>
+                        <p className="text-sm text-gray-300 mt-1">
+                          Discover guides, tools, and resources to improve your writing
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <Button
-                    onClick={() => setShowFilters(!showFilters)}
-                    variant="outline"
-                    className="h-12 px-6 bg-white/10 border-white/20 text-white hover:bg-white/20"
-                  >
-                    <Filter className="h-5 w-5 mr-2" />
-                    Filters
-                  </Button>
+                  
+                  {/* Right side - Search bar */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto">
+                    <div className="relative group min-w-[320px]">
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#F1592A]/20 to-[#D14820]/20 
+                        rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="relative flex">
+                        <Input
+                          type="text"
+                          placeholder="Search resources..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-12 pr-4 py-3 w-full bg-white/10 dark:bg-slate-800/50 
+                            backdrop-blur-sm border border-white/20 dark:border-slate-700/50 rounded-2xl
+                            focus:ring-2 focus:ring-[#F1592A]/50 focus:border-[#F1592A]/50 
+                            placeholder:text-gray-400 dark:placeholder:text-gray-500 text-white
+                            transition-all duration-300 shadow-sm hover:shadow-md"
+                        />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 
+                          group-hover:text-[#F1592A] transition-colors duration-300" />
+                      </div>
+                    </div>
+                    
+                    <Button
+                      onClick={() => setShowFilters(!showFilters)}
+                      variant="outline"
+                      className="px-6 py-3 h-12 rounded-2xl bg-white/10 border-white/20 text-white 
+                        hover:bg-white/20 hover:border-[#F1592A]/30 transition-all duration-300"
+                    >
+                      <Filter className="h-4 w-4 mr-2" />
+                      Filters
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
