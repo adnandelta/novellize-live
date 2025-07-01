@@ -999,7 +999,7 @@ export default function ModernLightNovelsHomepage() {
           <main className="flex-grow">
             <Toaster position="top-center" />
             
-            <section className="relative py-4 overflow-hidden">
+            <section className="relative py-6 overflow-hidden">
               {/* Hero Section with Background */}
               <div className="absolute inset-0 z-0">
                 <Image
@@ -1016,21 +1016,23 @@ export default function ModernLightNovelsHomepage() {
               </div>
 
               {/* Hero Content */}
-              <div className="container mx-auto px-4 sm:px-6 relative z-2">
+              <div className="container mx-auto px-6 sm:px-8 relative z-2">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
                   {/* Left column: Logo and Brand */}
                   <div className="w-full md:w-1/2 flex flex-col items-center md:items-start space-y-4">
-                    <Image
-                      src="/assets/favicon.png"
-                      alt="Company Logo"
-                      width={150}
-                      height={150}
-                      className="md:w-[200px] md:h-[200px] p-2"
-                      priority
-                    />
-                    <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-[#F1592A] text-center md:text-left rounded-md bg-opacity-60 bg-gray-200 dark:bg-opacity-60 dark:bg-[#232120] pb-2 pt-1 px-3">
-                      Novellize
-                    </h1>
+                    <div className="flex items-center gap-4">
+                      <Image
+                        src="/assets/favicon.png"
+                        alt="Company Logo"
+                        width={120}
+                        height={120}
+                        className="md:w-[140px] md:h-[140px] p-2"
+                        priority
+                      />
+                      <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-[#F1592A] rounded-md bg-opacity-60 bg-gray-200 dark:bg-opacity-60 dark:bg-[#232120] pb-2 pt-1 px-3">
+                        Novellize
+                      </h1>
+                    </div>
                   </div>
 
                   {/* Right column: Company Description */}
