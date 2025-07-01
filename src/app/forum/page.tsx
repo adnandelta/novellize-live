@@ -236,30 +236,30 @@ if (typeof document !== 'undefined') {
 }
 
 export default function ForumsPage() {
-const [mounted, setMounted] = useState(false)
-const [posts, setPosts] = useState<ForumPost[]>([])
-const [resources, setResources] = useState<Resource[]>([])
-const [loading, setLoading] = useState(true)
-const { user } = useAuth()
-const router = useRouter()
-const [userProfile, setUserProfile] = useState<{ profilePicture: string, username: string } | null>(null)
-const [newPostTitle, setNewPostTitle] = useState('')
-const [newPostContent, setNewPostContent] = useState('')
-const [newPostSection, setNewPostSection] = useState('general')
-const [newPostImage, setNewPostImage] = useState<File | null>(null)
-const [isDialogOpen, setIsDialogOpen] = useState(false)
-const [direction, setDirection] = useState(0)
-const [activeTab, setActiveTab] = useState("announcements")
-const fileInputRef = useRef<HTMLInputElement>(null)
-const [scrollToPostId, setScrollToPostId] = useState<string | null>(null)
-const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-const [userType, setUserType] = useState<string>('')
-const [isSubmitting, setIsSubmitting] = useState(false)
-const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
-const [selectedTag, setSelectedTag] = useState<string | null>(null)
-const [editingPost, setEditingPost] = useState<string | null>(null)
-const [deleteConfirmPost, setDeleteConfirmPost] = useState<string | null>(null)
-const [authorProfiles, setAuthorProfiles] = useState<{[key: string]: {profilePicture: string, username: string, userType: string}}>({})
+  const router = useRouter()
+  const { user } = useAuth()
+  const [mounted, setMounted] = useState(false)
+  const [posts, setPosts] = useState<ForumPost[]>([])
+  const [resources, setResources] = useState<Resource[]>([])
+  const [loading, setLoading] = useState(true)
+  const [userProfile, setUserProfile] = useState<{profilePicture: string, username: string} | null>(null)
+  const [newPostTitle, setNewPostTitle] = useState('')
+  const [newPostContent, setNewPostContent] = useState('')
+  const [newPostSection, setNewPostSection] = useState('general')
+  const [newPostImage, setNewPostImage] = useState<File | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [direction, setDirection] = useState(0)
+  const [activeTab, setActiveTab] = useState("announcements")
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [scrollToPostId, setScrollToPostId] = useState<string | null>(null)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  const [userType, setUserType] = useState<string>('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
+  const [editingPost, setEditingPost] = useState<string | null>(null)
+  const [deleteConfirmPost, setDeleteConfirmPost] = useState<string | null>(null)
+  const [authorProfiles, setAuthorProfiles] = useState<{[key: string]: {profilePicture: string, username: string, userType: string}}>({})
 
 // Generate consistent avatar color based on name
 const getAvatarColor = (name: string) => {
@@ -494,7 +494,7 @@ const renderPosts = (section: string) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
           whileHover={{ y: -4, transition: { duration: 0.2 } }}
-          className="relative ml-16 lg:ml-20"
+          className="relative ml-0 sm:ml-16 lg:ml-20"
         >
           <div className="group relative overflow-visible rounded-3xl backdrop-blur-2xl 
             bg-gradient-to-br from-white/15 via-white/10 to-white/5 
@@ -521,11 +521,61 @@ const renderPosts = (section: string) => {
               <div className="flex flex-col lg:flex-row min-h-[160px]">
                 {/* Left Content Area */}
                 <div className="flex-1 p-4 pb-2 relative">
-                  {/* Floating User Details Box - Left side, vertically centered */}
-                  <div className="absolute top-1/2 -left-16 transform -translate-y-1/2 z-20">
+                  {/* Mobile User Card - Top of post */}
+                  <div className="block sm:hidden mb-4">
+                    <div className="bg-gradient-to-r from-slate-900/40 via-slate-800/30 to-slate-900/40 
+                      dark:from-slate-800/40 dark:via-slate-700/30 dark:to-slate-800/40
+                      backdrop-blur-xl rounded-xl p-3 shadow-lg
+                      border border-white/10 dark:border-slate-600/20">
+                      <Link href={`/author/${post.authorId}`} className="block group/avatar">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10 ring-2 ring-white/30 dark:ring-slate-300/30 shadow-lg 
+                            hover:ring-[#F1592A]/50 transition-all duration-200 group-hover/avatar:scale-105">
+                            <AvatarImage src={authorProfiles[post.authorId]?.profilePicture || '/assets/default-avatar.png'} />
+                            <AvatarFallback className="bg-gradient-to-br from-[#F1592A]/80 to-[#D14820]/80 text-white font-bold text-sm">
+                              {post.author[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-white dark:text-slate-100 font-semibold text-sm leading-tight 
+                                hover:text-[#F1592A] transition-colors duration-200">{post.author}</span>
+                              {/* User Role Badge */}
+                              {(() => {
+                                const authorProfile = authorProfiles[post.authorId]
+                                if (!authorProfile) return null
+                                
+                                const userRole = authorProfile.userType || 'user'
+                                const roleBadge = getRoleBadge(userRole)
+                                const RoleIcon = roleBadge.icon
+                                
+                                return (
+                                  <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-all duration-300 ${roleBadge.className}`}>
+                                    <RoleIcon className="h-3 w-3" />
+                                    <span>{roleBadge.text}</span>
+                                  </div>
+                                )
+                              })()}
+                            </div>
+                            <div className="text-white/70 dark:text-slate-300/70 text-xs mt-1">
+                              {new Date(post.createdAt).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Desktop Floating User Details Box - Left side, vertically centered */}
+                  <div className="hidden sm:block absolute top-1/2 -left-4 sm:-left-16 transform -translate-y-1/2 z-20">
                     <div className="bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 
                       dark:from-slate-800/60 dark:via-slate-700/50 dark:to-slate-800/60
-                      backdrop-blur-xl rounded-2xl p-4 shadow-2xl min-w-[160px]
+                      backdrop-blur-xl rounded-2xl p-2 sm:p-4 shadow-2xl min-w-[100px] sm:min-w-[160px]
                       border border-white/10 dark:border-slate-600/20
                       transform group-hover:scale-105 transition-all duration-500 
                       shadow-black/20 hover:shadow-black/30
@@ -535,14 +585,14 @@ const renderPosts = (section: string) => {
                       after:from-[#F1592A]/10 after:via-transparent after:to-[#F1592A]/5 after:opacity-60">
                       <Link href={`/author/${post.authorId}`} className="block group/avatar">
                         <div className="flex flex-col items-center text-center relative z-10">
-                          <Avatar className="h-12 w-12 ring-2 ring-white/30 dark:ring-slate-300/30 shadow-lg 
-                            hover:ring-[#F1592A]/50 transition-all duration-200 group-hover/avatar:scale-105 mb-2">
+                          <Avatar className="h-8 w-8 sm:h-12 sm:w-12 ring-2 ring-white/30 dark:ring-slate-300/30 shadow-lg 
+                            hover:ring-[#F1592A]/50 transition-all duration-200 group-hover/avatar:scale-105 mb-1 sm:mb-2">
                             <AvatarImage src={authorProfiles[post.authorId]?.profilePicture || '/assets/default-avatar.png'} />
                             <AvatarFallback className="bg-gradient-to-br from-[#F1592A]/80 to-[#D14820]/80 text-white font-bold text-sm">
                               {post.author[0]}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="text-white dark:text-slate-100 font-semibold text-sm leading-tight 
+                          <span className="text-white dark:text-slate-100 font-semibold text-xs sm:text-sm leading-tight 
                             hover:text-[#F1592A] transition-colors duration-200 drop-shadow-sm">{post.author}</span>
                           
                           {/* User Role Badge */}
@@ -566,14 +616,14 @@ const renderPosts = (section: string) => {
                             })
                             
                             return (
-                              <div className={`flex items-center justify-center gap-1 px-2 py-1 rounded-full mt-2 text-xs font-medium transition-all duration-300 ${roleBadge.className}`}>
-                                <RoleIcon className="h-3 w-3" />
-                                <span>{roleBadge.text}</span>
+                              <div className={`flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full mt-1 sm:mt-2 text-xs font-medium transition-all duration-300 ${roleBadge.className}`}>
+                                <RoleIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                                <span className="hidden sm:inline">{roleBadge.text}</span>
                               </div>
                             )
                           })()}
                           
-                          <div className="text-white/70 dark:text-slate-300/70 text-xs mt-1 space-y-0.5 drop-shadow-sm">
+                          <div className="text-white/70 dark:text-slate-300/70 text-xs mt-1 space-y-0.5 drop-shadow-sm hidden sm:block">
                             <div>{new Date(post.createdAt).toLocaleDateString('en-US', {
                               month: 'short',
                               day: 'numeric'
@@ -588,8 +638,8 @@ const renderPosts = (section: string) => {
                     </div>
                   </div>
 
-                  {/* Content with left margin for floating box */}
-                  <div className="ml-0 lg:ml-32 pt-2">
+                  {/* Content with left margin for floating box on desktop only */}
+                  <div className="ml-0 sm:ml-0 lg:ml-32 pt-2">
                     <Link href={`/forum/post/${post.id}?tab=${section}&page=1`}>
                       <h3 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent 
                         bg-gradient-to-r from-[#232120] to-[#3E3F3E] dark:from-[#E7E7E8] dark:to-[#C3C3C3]
@@ -606,8 +656,8 @@ const renderPosts = (section: string) => {
                     </Link>
 
                     {/* Community, Replies, and Continue Reading in one line */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-4">
+                                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-4">
+                        <div className="flex items-center gap-2 sm:gap-4">
                         <Badge variant="outline" 
                           className="bg-gradient-to-r from-[#F1592A]/15 to-[#D14820]/15 text-[#F1592A] 
                           border-[#F1592A]/40 group-hover:bg-gradient-to-r group-hover:from-[#F1592A]/25 
@@ -630,8 +680,8 @@ const renderPosts = (section: string) => {
 
                 {/* Right Image Area - Seamlessly integrated */}
                 {post.image && (
-                  <div className="w-full lg:w-80 relative bg-gradient-to-br from-[#F1592A] to-[#D14820] 
-                    rounded-r-2xl lg:rounded-l-none overflow-hidden">
+                  <div className="w-full h-48 sm:h-auto lg:w-80 relative bg-gradient-to-br from-[#F1592A] to-[#D14820] 
+                    rounded-b-2xl lg:rounded-b-none lg:rounded-r-2xl lg:rounded-l-none overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10" />
                     <Image 
                       src={post.image} 
@@ -645,31 +695,31 @@ const renderPosts = (section: string) => {
 
               {/* Action buttons positioned in content area */}
               {(userType === 'admin' || user?.uid === post.authorId) && (
-                <div className="absolute top-4 right-4 z-20">
-                  <div className="flex items-center gap-2">
+                <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20">
+                  <div className="flex items-center gap-1 sm:gap-2">
                     {user?.uid === post.authorId && (
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setEditingPost(post.id)}
-                        className="px-3 py-1.5 rounded-xl text-xs font-medium bg-blue-500/15 text-blue-500 
-                          hover:bg-blue-500/25 border border-blue-500/30 hover:border-blue-500/50
-                          backdrop-blur-sm transition-all duration-500 flex items-center gap-1.5 shadow-lg"
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                        Edit
-                      </motion.button>
+                                              <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setEditingPost(post.id)}
+                          className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl text-xs font-medium bg-blue-500/15 text-blue-500 
+                            hover:bg-blue-500/25 border border-blue-500/30 hover:border-blue-500/50
+                            backdrop-blur-sm transition-all duration-500 flex items-center gap-1 sm:gap-1.5 shadow-lg"
+                        >
+                          <Edit className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                          <span className="hidden sm:inline">Edit</span>
+                        </motion.button>
                     )}
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setDeleteConfirmPost(post.id)}
-                      className="px-3 py-1.5 rounded-xl text-xs font-medium bg-red-500/15 text-red-500 
+                      className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl text-xs font-medium bg-red-500/15 text-red-500 
                         hover:bg-red-500/25 border border-red-500/30 hover:border-red-500/50
-                        backdrop-blur-sm transition-all duration-500 flex items-center gap-1.5 shadow-lg"
+                        backdrop-blur-sm transition-all duration-500 flex items-center gap-1 sm:gap-1.5 shadow-lg"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      Delete
+                      <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                      <span className="hidden sm:inline">Delete</span>
                     </motion.button>
                   </div>
                 </div>
@@ -967,8 +1017,7 @@ useEffect(() => {
 if (!mounted) return null
 
 return (
-  <div className="relative isolate min-h-screen bg-gradient-to-b from-[#F8F8F8] to-white 
-    dark:from-[#1A1918] dark:to-[#232120] text-[#232120] dark:text-[#E7E7E8]">
+  <div className="relative isolate min-h-screen bg-gradient-to-b from-[#F8F8F8] to-white dark:from-[#1A1918] dark:to-[#232120] text-[#232120] dark:text-[#E7E7E8]">
     <AnimatedPattern />
     
     <motion.div 
@@ -1095,7 +1144,7 @@ return (
                       border border-[#F1592A]/20 dark:border-[#F1592A]/20 shadow-2xl shadow-black/10 rounded-2xl" align="end">
                     {/* User Header Section */}
                       <div className="p-6 bg-gradient-to-r from-[#F1592A]/5 to-[#D14820]/5 rounded-t-2xl">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 sm:gap-4">
                           <Avatar className="h-16 w-16 ring-2 ring-[#F1592A]/30 shadow-lg">
                           <AvatarImage src={userProfile?.profilePicture} alt={userProfile?.username} />
                             <AvatarFallback className="bg-gradient-to-br from-[#F1592A] to-[#D14820] text-white text-lg font-bold">
@@ -1328,15 +1377,15 @@ return (
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 container max-w-none mx-auto px-4 lg:px-6 lg:pr-[336px] py-12">
-            <div className="max-w-none space-y-12">
+          <div className="flex-1 container max-w-none mx-auto px-2 sm:px-4 lg:px-6 lg:pr-[336px] py-6 sm:py-12">
+            <div className="max-w-none space-y-6 sm:space-y-12">
               {/* Header Section */}
               <div className="relative">
-                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className="w-1 h-8 bg-gradient-to-b from-[#F1592A] to-[#D14820] rounded-full" />
                     <div>
-                      <h1 className="text-2xl lg:text-3xl font-bold bg-clip-text text-transparent 
+                      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-clip-text text-transparent 
                         bg-gradient-to-r from-[#232120] via-[#3E3F3E] to-[#232120] 
                         dark:from-[#E7E7E8] dark:via-[#C3C3C3] dark:to-[#E7E7E8]">
               Forum Discussions
@@ -1480,16 +1529,16 @@ return (
               </div>
 
               {/* Modern Tab Navigation */}
-              <div className="relative mb-8">
-                <div className="flex items-center justify-center">
-                  <div className="relative p-1 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm 
-                    rounded-2xl border border-white/20 dark:border-slate-700/50 shadow-lg">
-                    <div className="flex items-center space-x-1">
+              <div className="relative mb-6 sm:mb-8">
+                                  <div className="flex items-center justify-center overflow-x-auto">
+                    <div className="relative p-1 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm 
+                      rounded-2xl border border-white/20 dark:border-slate-700/50 shadow-lg min-w-max">
+                      <div className="flex items-center space-x-1">
                       {["announcements", "general", "updates", "community", "resources"].map((tab) => (
                     <motion.button
                       key={tab}
                       onClick={() => handleTabChange(tab)}
-                          className={`relative px-6 py-3 text-base font-medium rounded-xl transition-all duration-300
+                          className={`relative px-3 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-medium rounded-xl transition-all duration-300
                         ${activeTab === tab ? 
                               'text-white' : 
                               'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
@@ -1505,13 +1554,15 @@ return (
                               transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                             />
                           )}
-                          <span className="relative z-10 capitalize flex items-center gap-2">
-                            {tab === 'announcements' && '📢'}
-                            {tab === 'general' && '💬'}
-                            {tab === 'updates' && '🔄'}
-                            {tab === 'community' && '👥'}
-                            {tab === 'resources' && '📚'}
-                            {tab}
+                          <span className="relative z-10 capitalize flex items-center gap-1 sm:gap-2">
+                            <span className="text-sm sm:text-base">
+                              {tab === 'announcements' && '📢'}
+                              {tab === 'general' && '💬'}
+                              {tab === 'updates' && '🔄'}
+                              {tab === 'community' && '👥'}
+                              {tab === 'resources' && '📚'}
+                            </span>
+                            <span className="hidden sm:inline">{tab}</span>
                       </span>
                     </motion.button>
                   ))}
@@ -1935,9 +1986,9 @@ return (
                     </div>
                   </div>
                 </div>
-              </motion.div>
-            </>
-          )}
+                </motion.div>
+                </>
+            )}
         </AnimatePresence>
 
         {/* Delete Confirmation Dialog */}
