@@ -17,6 +17,7 @@ interface HeroCard {
   link: string
   buttonText?: string
   isActive: boolean
+  tags?: string[]
 }
 
 interface HeroCarouselProps {
@@ -102,7 +103,7 @@ export default function HeroCarousel({ loading = false }: HeroCarouselProps) {
 
   if (loading || isLoading || cards.length === 0) {
     return (
-      <section className="relative py-4 bg-gradient-to-br from-[#E7E7E8] to-[#F5F5F5] dark:from-[#232120] dark:to-[#2A2827] overflow-hidden">
+      <section className="relative pt-10 pb-4 bg-gradient-to-br from-[#E7E7E8] to-[#F5F5F5] dark:from-[#232120] dark:to-[#2A2827] overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="relative h-[300px] md:h-[350px] rounded-2xl bg-gray-200 dark:bg-gray-700 animate-pulse">
             <div className="absolute inset-0 flex items-center justify-center">
@@ -115,7 +116,7 @@ export default function HeroCarousel({ loading = false }: HeroCarouselProps) {
   }
 
   return (
-    <section className="relative py-4 bg-gradient-to-br from-[#E7E7E8] to-[#F5F5F5] dark:from-[#232120] dark:to-[#2A2827] overflow-hidden">
+    <section className="relative pt-10 pb-4 bg-gradient-to-br from-[#E7E7E8] to-[#F5F5F5] dark:from-[#232120] dark:to-[#2A2827] overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute w-full h-full">
@@ -141,7 +142,13 @@ export default function HeroCarousel({ loading = false }: HeroCarouselProps) {
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="flex gap-4 h-[300px] md:h-[350px]">
+        {/* Extended container with transparent sides for navigation buttons */}
+        <div className="relative">
+          {/* Transparent extensions for buttons */}
+          <div className="absolute -left-16 top-0 w-20 h-full z-30 pointer-events-none" />
+          <div className="absolute -right-16 top-0 w-20 h-full z-30 pointer-events-none" />
+          
+          <div className="flex gap-4 h-[300px] md:h-[350px] mx-8">
                     {/* Main Carousel */}
           <div className="flex-1 relative rounded-2xl overflow-hidden shadow-2xl">
             <AnimatePresence mode="wait">
@@ -176,7 +183,26 @@ export default function HeroCarousel({ loading = false }: HeroCarouselProps) {
 
                 {/* Content - Bottom Aligned */}
                 <div className="relative z-10 h-full flex items-end">
-                  <div className="w-full max-w-xl px-6 md:px-8 pb-6 md:pb-8">
+                  <div className="w-full px-6 md:px-8 pb-6 md:pb-8">
+                    {/* Tags */}
+                    {cards[currentSlide]?.tags && cards[currentSlide].tags.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 50, x: 30 }}
+                        animate={{ opacity: 1, y: 0, x: 0 }}
+                        transition={{ delay: 0.1, duration: 0.6, ease: "easeOut" }}
+                        className="flex flex-wrap gap-2 mb-1"
+                      >
+                        {cards[currentSlide].tags.map((tag, index) => (
+                          <span
+                            key={index}
+                            className="bg-transparent text-white text-xs font-medium px-2 py-1 border border-white uppercase tracking-wide"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </motion.div>
+                    )}
+
                     <motion.h1
                       initial={{ opacity: 0, y: 50, x: 30 }}
                       animate={{ opacity: 1, y: 0, x: 0 }}
@@ -190,7 +216,8 @@ export default function HeroCarousel({ loading = false }: HeroCarouselProps) {
                       initial={{ opacity: 0, y: 50, x: 30 }}
                       animate={{ opacity: 1, y: 0, x: 0 }}
                       transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}
-                      className="text-sm md:text-base text-gray-200 mb-4 leading-relaxed max-w-lg"
+                      className="text-sm md:text-base text-gray-200 mb-4 whitespace-pre-line"
+                      style={{ lineHeight: '1.1' }}
                     >
                       {cards[currentSlide]?.content}
                     </motion.p>
@@ -221,38 +248,38 @@ export default function HeroCarousel({ loading = false }: HeroCarouselProps) {
               </motion.div>
             </AnimatePresence>
 
-            {/* Navigation Arrows */}
+            {/* Slide Counter - Bottom Right */}
             {cards.length > 1 && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={prevSlide}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/20 hover:bg-black/40 text-white border-none rounded-full w-10 h-10 backdrop-blur-sm"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={nextSlide}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/20 hover:bg-black/40 text-white border-none rounded-full w-10 h-10 backdrop-blur-sm"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </Button>
-              </>
-            )}
-
-            {/* Slide Counter */}
-            {cards.length > 1 && (
-              <div className="absolute top-4 right-4 z-20 bg-black/30 backdrop-blur-sm rounded-full px-3 py-1">
-                <span className="text-white text-sm font-medium">
+              <div className="absolute bottom-3 right-3 z-20 bg-black/20 backdrop-blur-sm rounded-full px-2 py-1">
+                <span className="text-white text-xs font-medium">
                   {currentSlide + 1} / {cards.length}
                 </span>
               </div>
             )}
           </div>
+
+          {/* Navigation Arrows - Outside the carousel */}
+          {cards.length > 1 && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={prevSlide}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-30 bg-white/95 hover:bg-white text-gray-800 border-2 border-white rounded-full w-12 h-12 shadow-xl backdrop-blur-sm transition-all duration-300 hover:scale-110"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={nextSlide}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-30 bg-white/95 hover:bg-white text-gray-800 border-2 border-white rounded-full w-12 h-12 shadow-xl backdrop-blur-sm transition-all duration-300 hover:scale-110"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </Button>
+            </>
+          )}
 
           {/* Side Preview Cards - Vertical Strips */}
           {cards.length > 1 && (
@@ -337,6 +364,7 @@ export default function HeroCarousel({ loading = false }: HeroCarouselProps) {
               })}
             </div>
           )}
+        </div>
         </div>
 
         {/* Bottom Slide Indicators */}

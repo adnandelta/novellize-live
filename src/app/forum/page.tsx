@@ -1722,10 +1722,6 @@ return (
                               <p className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
                                 {resource.category}
                               </p>
-                              <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">•</span>
-                              <span className="text-xs text-[#F1592A] font-medium">
-                                {resource.estimatedReadTime} min read
-                              </span>
                             </div>
                           </div>
                         </motion.div>
@@ -1894,10 +1890,6 @@ return (
                                   <p className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
                                     {resource.category}
                                   </p>
-                                  <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">•</span>
-                                  <span className="text-xs text-[#F1592A] font-medium">
-                                    {resource.estimatedReadTime} min read
-                                  </span>
                                 </div>
                               </div>
                             </motion.div>

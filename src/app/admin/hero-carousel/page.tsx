@@ -27,6 +27,7 @@ interface HeroCard {
   buttonText: string
   isActive: boolean
   order: number
+  tags?: string[]
 }
 
 export default function HeroCarouselManagement() {
@@ -47,8 +48,10 @@ export default function HeroCarouselManagement() {
     image: '',
     link: '',
     buttonText: 'Learn More',
-    isActive: true
+    isActive: true,
+    tags: []
   })
+  const [tagInput, setTagInput] = useState('')
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -120,7 +123,8 @@ export default function HeroCarouselManagement() {
       link: formData.link || '',
       buttonText: formData.buttonText || 'Learn More',
       isActive: formData.isActive ?? true,
-      order: cards.length
+      order: cards.length,
+      tags: formData.tags || []
     }
 
     setCards([...cards, newCard])
@@ -130,7 +134,8 @@ export default function HeroCarouselManagement() {
       image: '',
       link: '',
       buttonText: 'Learn More',
-      isActive: true
+      isActive: true,
+      tags: []
     })
     setIsAddingNew(false)
     toast.success('Card added successfully')
@@ -139,6 +144,7 @@ export default function HeroCarouselManagement() {
   const handleEditCard = (card: HeroCard) => {
     setEditingCard(card)
     setFormData(card)
+    setTagInput('')
   }
 
   const handleUpdateCard = () => {
@@ -158,7 +164,8 @@ export default function HeroCarouselManagement() {
       image: '',
       link: '',
       buttonText: 'Learn More',
-      isActive: true
+      isActive: true,
+      tags: []
     })
     toast.success('Card updated successfully')
   }
@@ -271,8 +278,10 @@ export default function HeroCarouselManagement() {
       image: '',
       link: '',
       buttonText: 'Learn More',
-      isActive: true
+      isActive: true,
+      tags: []
     })
+    setTagInput('')
     setEditingCard(null)
     setIsAddingNew(false)
   }
@@ -358,6 +367,72 @@ export default function HeroCarouselManagement() {
                         className="bg-[#2A2827] border-[#444] text-white min-h-[100px]"
                         placeholder="Enter card content"
                       />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="tags" className="text-gray-300">Tags</Label>
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <Input
+                            id="tags"
+                            value={tagInput}
+                            onChange={(e) => setTagInput(e.target.value)}
+                            className="bg-[#2A2827] border-[#444] text-white"
+                            placeholder="Enter tag and press Enter"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
+                                  setFormData({ 
+                                    ...formData, 
+                                    tags: [...(formData.tags || []), tagInput.trim()] 
+                                  })
+                                  setTagInput('')
+                                }
+                              }
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
+                                setFormData({ 
+                                  ...formData, 
+                                  tags: [...(formData.tags || []), tagInput.trim()] 
+                                })
+                                setTagInput('')
+                              }
+                            }}
+                            className="bg-[#F1592A] hover:bg-[#E44D1F] text-white px-3"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        
+                        {/* Display current tags */}
+                        {formData.tags && formData.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {formData.tags.map((tag, index) => (
+                              <span
+                                key={index}
+                                className="bg-transparent text-white text-xs font-medium px-2 py-1 border border-white uppercase tracking-wide flex items-center gap-1"
+                              >
+                                {tag}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newTags = formData.tags?.filter((_, i) => i !== index)
+                                    setFormData({ ...formData, tags: newTags })
+                                  }}
+                                  className="text-gray-300 hover:text-white"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div>
