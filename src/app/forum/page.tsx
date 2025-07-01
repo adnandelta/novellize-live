@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, Moon, Sun, LogOut, User, Plus, Home, Image as ImageIcon, MessageSquare, ChevronRight, ChevronsLeftRight, Flame, BookOpen, Crown, Sparkles, Menu, X, Library, Trash2, Edit, ExternalLink, Download, Star, Eye, Clock, FileText, Link as LinkIcon, Wrench, FileImage } from "lucide-react"
+import { GiQuillInk } from "react-icons/gi"
 import Link from "next/link"
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -258,7 +259,7 @@ const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 const [selectedTag, setSelectedTag] = useState<string | null>(null)
 const [editingPost, setEditingPost] = useState<string | null>(null)
 const [deleteConfirmPost, setDeleteConfirmPost] = useState<string | null>(null)
-const [authorProfiles, setAuthorProfiles] = useState<{[key: string]: {profilePicture: string, username: string}}>({})
+const [authorProfiles, setAuthorProfiles] = useState<{[key: string]: {profilePicture: string, username: string, userType: string}}>({})
 
 // Generate consistent avatar color based on name
 const getAvatarColor = (name: string) => {
@@ -276,6 +277,34 @@ const getAvatarColor = (name: string) => {
   ]
   const index = name.charCodeAt(0) % colors.length
   return colors[index]
+}
+
+// Get role badge styling
+const getRoleBadge = (userType: string) => {
+  // Normalize the userType to handle any casing issues
+  const normalizedType = userType?.toLowerCase().trim() || 'user'
+  
+  switch (normalizedType) {
+    case 'admin':
+      return {
+        icon: Crown,
+        text: 'Admin',
+        className: 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 backdrop-blur-md text-yellow-200 border border-yellow-400/50 shadow-lg shadow-yellow-400/20 ring-1 ring-yellow-400/20'
+      }
+    case 'author':
+      return {
+        icon: GiQuillInk,
+        text: 'Author',
+        className: 'bg-black/20 backdrop-blur-md text-emerald-300 border border-emerald-400/30 shadow-lg shadow-emerald-400/10'
+      }
+    case 'user':
+    default:
+      return {
+        icon: User,
+        text: 'Member',
+        className: 'bg-black/20 backdrop-blur-md text-slate-300 border border-slate-400/30 shadow-lg shadow-slate-400/10'
+      }
+  }
 }
 
 const fetchPosts = async () => {
@@ -465,137 +494,186 @@ const renderPosts = (section: string) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
           whileHover={{ y: -4, transition: { duration: 0.2 } }}
+          className="relative ml-16 lg:ml-20"
         >
-          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl 
-            bg-gradient-to-r from-white/10 to-white/5 dark:from-slate-900/10 dark:to-slate-800/5
-            hover:from-white/20 hover:to-white/10 dark:hover:from-slate-900/20 dark:hover:to-slate-800/10
-            border border-white/20 dark:border-slate-700/30 hover:border-[#F1592A]/40
-            shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-[#F1592A]/10
-            transition-all duration-300 ease-in-out">
+          <div className="group relative overflow-visible rounded-3xl backdrop-blur-2xl 
+            bg-gradient-to-br from-white/15 via-white/10 to-white/5 
+            dark:from-slate-900/20 dark:via-slate-800/15 dark:to-slate-900/10
+            hover:from-white/25 hover:via-white/20 hover:to-white/15 
+            dark:hover:from-slate-900/30 dark:hover:via-slate-800/25 dark:hover:to-slate-900/20
+            border border-white/30 dark:border-slate-600/40 hover:border-[#F1592A]/50
+            shadow-2xl shadow-black/10 hover:shadow-3xl hover:shadow-[#F1592A]/20
+            transition-all duration-500 ease-out
+            before:absolute before:inset-0 before:rounded-3xl before:bg-gradient-to-br 
+            before:from-[#F1592A]/5 before:via-transparent before:to-[#D14820]/5 
+            before:opacity-0 before:transition-opacity before:duration-500
+            hover:before:opacity-100">
             
-            <div className="absolute inset-0 bg-gradient-to-r from-[#F1592A]/3 to-transparent opacity-0 
-              group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#F1592A]/8 via-transparent to-[#D14820]/8 
+              opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
             
-            <div className="relative z-10 p-6">
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-                <div className="flex sm:flex-col items-center space-y-0 sm:space-y-2 gap-4 sm:gap-0">
-                  <Link href={`/author/${post.authorId}`} className="group/avatar">
-                    <Avatar className="h-14 w-14 ring-2 ring-[#F1592A]/30 shadow-lg hover:ring-[#F1592A]/50 transition-all duration-200 group-hover/avatar:scale-105">
-                      <AvatarImage src={authorProfiles[post.authorId]?.profilePicture || '/assets/default-avatar.png'} />
-                      <AvatarFallback className={`bg-gradient-to-br ${getAvatarColor(post.author)} text-white font-bold text-lg`}>
-                        {post.author[0]}
-                      </AvatarFallback>
-                  </Avatar>
-                  </Link>
-                  <div className="flex flex-col items-start sm:items-center text-left sm:text-center">
-                    <Link href={`/author/${post.authorId}`} className="hover:text-[#F1592A] transition-colors duration-200">
-                      <span className="text-sm font-semibold text-[#232120] dark:text-[#E7E7E8]">{post.author}</span>
-                    </Link>
-                    <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3] mt-1">
-                      {new Date(post.createdAt).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric'
-                      })}
-                    </span>
-                    <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
-                      {new Date(post.createdAt).toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <Link href={`/forum/post/${post.id}?tab=${section}&page=1`}>
-                        <h3 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent 
-                          bg-gradient-to-r from-[#232120] to-[#3E3F3E] dark:from-[#E7E7E8] dark:to-[#C3C3C3]
-                          group-hover:from-[#F1592A] group-hover:to-[#D14820]
-                          transition-all duration-300 mb-3">
-                          {post.title}
-                        </h3>
+            {/* Glass reflection effect */}
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/20 via-transparent to-transparent 
+              opacity-30 group-hover:opacity-50 transition-opacity duration-500" />
+            
+            <div className="relative z-10">
+              {/* Main Content Area */}
+              <div className="flex flex-col lg:flex-row min-h-[160px]">
+                {/* Left Content Area */}
+                <div className="flex-1 p-4 pb-2 relative">
+                  {/* Floating User Details Box - Left side, vertically centered */}
+                  <div className="absolute top-1/2 -left-16 transform -translate-y-1/2 z-20">
+                    <div className="bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 
+                      dark:from-slate-800/60 dark:via-slate-700/50 dark:to-slate-800/60
+                      backdrop-blur-xl rounded-2xl p-4 shadow-2xl min-w-[160px]
+                      border border-white/10 dark:border-slate-600/20
+                      transform group-hover:scale-105 transition-all duration-500 
+                      shadow-black/20 hover:shadow-black/30
+                      before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br 
+                      before:from-white/10 before:via-white/5 before:to-transparent before:opacity-100
+                      after:absolute after:inset-0 after:rounded-2xl after:bg-gradient-to-t 
+                      after:from-[#F1592A]/10 after:via-transparent after:to-[#F1592A]/5 after:opacity-60">
+                      <Link href={`/author/${post.authorId}`} className="block group/avatar">
+                        <div className="flex flex-col items-center text-center relative z-10">
+                          <Avatar className="h-12 w-12 ring-2 ring-white/30 dark:ring-slate-300/30 shadow-lg 
+                            hover:ring-[#F1592A]/50 transition-all duration-200 group-hover/avatar:scale-105 mb-2">
+                            <AvatarImage src={authorProfiles[post.authorId]?.profilePicture || '/assets/default-avatar.png'} />
+                            <AvatarFallback className="bg-gradient-to-br from-[#F1592A]/80 to-[#D14820]/80 text-white font-bold text-sm">
+                              {post.author[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-white dark:text-slate-100 font-semibold text-sm leading-tight 
+                            hover:text-[#F1592A] transition-colors duration-200 drop-shadow-sm">{post.author}</span>
+                          
+                          {/* User Role Badge */}
+                          {(() => {
+                            const authorProfile = authorProfiles[post.authorId]
+                            if (!authorProfile) {
+                              console.log('No author profile found for:', post.author, post.authorId)
+                              return null
+                            }
+                            
+                            const userRole = authorProfile.userType || 'user'
+                            const roleBadge = getRoleBadge(userRole)
+                            const RoleIcon = roleBadge.icon
+                            
+                            console.log('Role Badge Debug:', {
+                              author: post.author,
+                              authorId: post.authorId,
+                              userRole: userRole,
+                              roleBadgeText: roleBadge.text,
+                              authorProfile: authorProfile
+                            })
+                            
+                            return (
+                              <div className={`flex items-center justify-center gap-1 px-2 py-1 rounded-full mt-2 text-xs font-medium transition-all duration-300 ${roleBadge.className}`}>
+                                <RoleIcon className="h-3 w-3" />
+                                <span>{roleBadge.text}</span>
+                              </div>
+                            )
+                          })()}
+                          
+                          <div className="text-white/70 dark:text-slate-300/70 text-xs mt-1 space-y-0.5 drop-shadow-sm">
+                            <div>{new Date(post.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric'
+                            })}</div>
+                            <div>{new Date(post.createdAt).toLocaleTimeString('en-US', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}</div>
+                          </div>
+                        </div>
                       </Link>
-                      <div className="flex flex-wrap items-center gap-3 mb-4">
+                    </div>
+                  </div>
+
+                  {/* Content with left margin for floating box */}
+                  <div className="ml-0 lg:ml-32 pt-2">
+                    <Link href={`/forum/post/${post.id}?tab=${section}&page=1`}>
+                      <h3 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent 
+                        bg-gradient-to-r from-[#232120] to-[#3E3F3E] dark:from-[#E7E7E8] dark:to-[#C3C3C3]
+                        group-hover:from-[#F1592A] group-hover:to-[#D14820]
+                        transition-all duration-500 mb-4 leading-tight">
+                        {post.title}
+                      </h3>
+                    </Link>
+
+                    <Link href={`/forum/post/${post.id}?tab=${section}&page=1`}>
+                      <p className="text-[#232120] dark:text-[#E7E7E8] text-base leading-relaxed line-clamp-4 mb-4">
+                        {post.content}
+                      </p>
+                    </Link>
+
+                    {/* Community, Replies, and Continue Reading in one line */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-4">
                         <Badge variant="outline" 
-                          className="bg-gradient-to-r from-[#F1592A]/10 to-[#D14820]/10 text-[#F1592A] 
-                          border-[#F1592A]/30 group-hover:bg-gradient-to-r group-hover:from-[#F1592A]/20 
-                          group-hover:to-[#D14820]/20 transition-all duration-300 font-medium">
+                          className="bg-gradient-to-r from-[#F1592A]/15 to-[#D14820]/15 text-[#F1592A] 
+                          border-[#F1592A]/40 group-hover:bg-gradient-to-r group-hover:from-[#F1592A]/25 
+                          group-hover:to-[#D14820]/25 transition-all duration-500 font-medium backdrop-blur-sm">
                           {post.section}
                         </Badge>
-                        <div className="flex items-center space-x-2 text-sm text-[#8E8F8E] dark:text-[#C3C3C3]">
+                        <Link href={`/forum/post/${post.id}?tab=${section}&page=1`} className="flex items-center space-x-2 text-sm text-[#8E8F8E] dark:text-[#C3C3C3] hover:text-[#F1592A] transition-colors duration-300">
                           <MessageSquare className="h-4 w-4 text-[#F1592A]" />
                           <span className="font-medium">{post.repliesCount} {post.repliesCount === 1 ? 'reply' : 'replies'}</span>
-                        </div>
-                        {(userType === 'admin' || user?.uid === post.authorId) && (
-                          <div className="flex items-center gap-2">
-                            {user?.uid === post.authorId && (
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                                onClick={() => setEditingPost(post.id)}
-                                className="px-3 py-1.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-500 
-                                  hover:bg-blue-500/20 border border-blue-500/20 hover:border-blue-500/30
-                                  transition-all duration-300 flex items-center gap-1.5"
-                              >
-                                <Edit className="h-3.5 w-3.5" />
-                                Edit
-                              </motion.button>
-                            )}
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => setDeleteConfirmPost(post.id)}
-                              className="px-3 py-1.5 rounded-full text-xs font-medium bg-red-500/10 text-red-500 
-                                hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/30
-                                transition-all duration-300 flex items-center gap-1.5"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                            Delete
-                          </motion.button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row items-start gap-4">
-                    <div className="flex-1 min-w-0">
-                      <Link href={`/forum/post/${post.id}?tab=${section}&page=1`}>
-                        <p className="text-[#232120] dark:text-[#E7E7E8] text-base leading-relaxed line-clamp-3">
-                          {post.content}
-                        </p>
-                      </Link>
-                      <div className="flex justify-end mt-3">
-                        <Link href={`/forum/post/${post.id}?tab=${section}&page=1`}>
-                          <div className="group/link flex items-center gap-2 px-3 py-1.5 rounded-lg
-                            bg-gradient-to-r from-[#F1592A]/10 to-[#D14820]/10 
-                            hover:from-[#F1592A]/20 hover:to-[#D14820]/20
-                            border border-[#F1592A]/20 hover:border-[#F1592A]/40
-                            text-[#F1592A] hover:text-[#D14820] font-medium text-sm
-                            transition-all duration-300">
-                            <span>Continue reading</span>
-                            <ChevronRight className="h-4 w-4 group-hover/link:translate-x-1 transition-transform duration-200" />
-                          </div>
                         </Link>
                       </div>
+                      
+                      <Link href={`/forum/post/${post.id}?tab=${section}&page=1`} className="flex items-center gap-1.5 text-sm text-[#F1592A] hover:text-[#D14820] font-medium transition-colors duration-300 group/continue">
+                        <span>Continue reading</span>
+                        <ChevronRight className="h-4 w-4 group-hover/continue:translate-x-1 transition-transform duration-300" />
+                      </Link>
                     </div>
-
-                    {post.image && (
-                      <div className="relative h-32 w-full sm:w-48 flex-shrink-0 overflow-hidden rounded-lg 
-                        shadow-md border border-white/10 dark:border-slate-700/30">
-                        <Image 
-                          src={post.image} 
-                          alt="Post image" 
-                          fill
-                          className="object-contain transform group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                    )}
                   </div>
                 </div>
+
+                {/* Right Image Area - Seamlessly integrated */}
+                {post.image && (
+                  <div className="w-full lg:w-80 relative bg-gradient-to-br from-[#F1592A] to-[#D14820] 
+                    rounded-r-2xl lg:rounded-l-none overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10" />
+                    <Image 
+                      src={post.image} 
+                      alt="Post image" 
+                      fill
+                      className="object-cover transform group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                )}
               </div>
+
+              {/* Action buttons positioned in content area */}
+              {(userType === 'admin' || user?.uid === post.authorId) && (
+                <div className="absolute top-4 right-4 z-20">
+                  <div className="flex items-center gap-2">
+                    {user?.uid === post.authorId && (
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setEditingPost(post.id)}
+                        className="px-3 py-1.5 rounded-xl text-xs font-medium bg-blue-500/15 text-blue-500 
+                          hover:bg-blue-500/25 border border-blue-500/30 hover:border-blue-500/50
+                          backdrop-blur-sm transition-all duration-500 flex items-center gap-1.5 shadow-lg"
+                      >
+                        <Edit className="h-3.5 w-3.5" />
+                        Edit
+                      </motion.button>
+                    )}
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setDeleteConfirmPost(post.id)}
+                      className="px-3 py-1.5 rounded-xl text-xs font-medium bg-red-500/15 text-red-500 
+                        hover:bg-red-500/25 border border-red-500/30 hover:border-red-500/50
+                        backdrop-blur-sm transition-all duration-500 flex items-center gap-1.5 shadow-lg"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Delete
+                    </motion.button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </motion.div>
@@ -831,7 +909,7 @@ const renderResources = () => {
 }
 
 const fetchAuthorProfiles = async (posts: ForumPost[]) => {
-  const profiles: {[key: string]: {profilePicture: string, username: string}} = {}
+  const profiles: {[key: string]: {profilePicture: string, username: string, userType: string}} = {}
   const seenAuthorIds: {[key: string]: boolean} = {}
   
   for (const post of posts) {
@@ -843,7 +921,8 @@ const fetchAuthorProfiles = async (posts: ForumPost[]) => {
           const userData = userDoc.docs[0].data()
           profiles[post.authorId] = {
             profilePicture: userData.profilePicture || '',
-            username: userData.username || 'Anonymous'
+            username: userData.username || 'Anonymous',
+            userType: userData.userType || 'user'
           }
         }
       } catch (error) {
@@ -1241,6 +1320,13 @@ return (
 
       <main className="flex-grow">
         <div className="flex">
+          {/* Left Sidebar Space for Ads */}
+          <div className="hidden lg:block w-80 flex-shrink-0">
+            <div className="fixed top-20 left-0 w-80 h-[calc(100vh-5rem)] overflow-y-auto z-30">
+              {/* Blank space reserved for future advertisements */}
+            </div>
+          </div>
+
           {/* Main Content */}
           <div className="flex-1 container max-w-none mx-auto px-4 lg:px-6 lg:pr-[336px] py-12">
             <div className="max-w-none space-y-12">
@@ -1403,7 +1489,7 @@ return (
                     <motion.button
                       key={tab}
                       onClick={() => handleTabChange(tab)}
-                          className={`relative px-6 py-3 text-sm font-medium rounded-xl transition-all duration-300
+                          className={`relative px-6 py-3 text-base font-medium rounded-xl transition-all duration-300
                         ${activeTab === tab ? 
                               'text-white' : 
                               'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
@@ -1465,6 +1551,83 @@ return (
           <div className="hidden lg:block fixed top-20 right-0 w-80 h-[calc(100vh-5rem)] overflow-y-auto z-40 
             bg-[#F8F8F8]/95 dark:bg-[#1A1918]/95 backdrop-blur-xl border-l border-[#F1592A]/20">
             <div className="p-6 space-y-6">
+              {/* User Profile Card */}
+              {user && userProfile && (
+                <div className="relative overflow-hidden rounded-xl backdrop-blur-xl 
+                  bg-gradient-to-br from-white/80 to-white/60 dark:from-[#232120]/80 dark:to-[#232120]/60
+                  border border-[#F1592A]/20 shadow-lg mb-6">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#F1592A]/8 to-[#D14820]/8 opacity-50" />
+                  
+                  <div className="relative z-10 p-6">
+                    <div className="flex flex-col items-center text-center">
+                      {/* Profile Picture */}
+                      <div className="relative mb-4">
+                        <Avatar className="h-20 w-20 ring-4 ring-[#F1592A]/30 shadow-xl hover:ring-[#F1592A]/50 transition-all duration-300">
+                          <AvatarImage src={userProfile.profilePicture || '/assets/default-avatar.png'} alt={userProfile.username} />
+                          <AvatarFallback className={`bg-gradient-to-br ${getAvatarColor(userProfile.username || '')} text-white font-bold text-2xl`}>
+                            {userProfile.username?.[0] || '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white dark:border-[#232120] flex items-center justify-center">
+                          <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                        </div>
+                      </div>
+
+                      {/* User Info */}
+                      <div className="mb-4">
+                        <h3 className="text-lg font-bold text-[#232120] dark:text-[#E7E7E8] mb-1">
+                          {userProfile.username || 'Username'}
+                        </h3>
+                        <p className="text-sm text-[#8E8F8E] dark:text-[#C3C3C3] truncate max-w-full">
+                          {user.email}
+                        </p>
+                        <div className="flex items-center justify-center gap-1 mt-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                          <span className="text-xs text-green-600 dark:text-green-400 font-medium">Online</span>
+                        </div>
+                      </div>
+
+                      {/* Stats */}
+                      <div className="grid grid-cols-2 gap-4 w-full mb-4">
+                        <div className="text-center p-3 rounded-lg bg-gradient-to-br from-[#F1592A]/10 to-[#D14820]/10 border border-[#F1592A]/20">
+                          <div className="text-lg font-bold text-[#F1592A]">
+                            {posts.filter(post => post.authorId === user.uid).length}
+                          </div>
+                          <div className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">Posts</div>
+                        </div>
+                        <div className="text-center p-3 rounded-lg bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20">
+                          <div className="text-lg font-bold text-blue-500">
+                            {posts.filter(post => post.authorId === user.uid).reduce((sum, post) => sum + post.repliesCount, 0)}
+                          </div>
+                          <div className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">Replies</div>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 w-full">
+                        <Link href="/user_profile" className="flex-1">
+                          <Button className="w-full bg-gradient-to-r from-[#F1592A] to-[#D14820] text-white text-sm 
+                            rounded-xl hover:from-[#D14820] hover:to-[#F1592A] transition-all duration-300 
+                            shadow-lg hover:shadow-xl hover:scale-105">
+                            <User className="w-4 h-4 mr-2" />
+                            Profile
+                          </Button>
+                        </Link>
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          className="bg-white/60 dark:bg-[#2A2827]/60 border-[#F1592A]/30 hover:bg-[#F1592A]/10 
+                            hover:border-[#F1592A]/50 transition-all duration-300 rounded-xl"
+                          onClick={() => setIsDialogOpen(true)}
+                        >
+                          <Plus className="w-4 h-4 text-[#F1592A]" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Featured Resources */}
               <div className="relative overflow-hidden rounded-xl backdrop-blur-xl 
                 bg-gradient-to-r from-white/80 to-white/60 dark:from-[#232120]/80 dark:to-[#232120]/60

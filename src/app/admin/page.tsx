@@ -281,7 +281,16 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (currentNovel) {
-      setAuthorsInput(currentNovel.credits.authors || []);
+      // Sync authorsInput with credits.authors, but also ensure it includes the original publisher
+      const creditsAuthors = currentNovel.credits.authors || [];
+      const originalPublisher = currentNovel.publishers?.original;
+      
+      // If original publisher exists and is not already in credits.authors, add it
+      if (originalPublisher && !creditsAuthors.includes(originalPublisher)) {
+        setAuthorsInput([originalPublisher, ...creditsAuthors]);
+      } else {
+        setAuthorsInput(creditsAuthors);
+      }
     }
   }, [currentNovel]);
 
@@ -1729,14 +1738,17 @@ export default function AdminDashboard() {
             <DialogTrigger asChild>
               <motion.div variants={itemVariants}>
               <Button 
-                onClick={() => setCurrentNovel({ 
-                  ...currentNovel,
-                  uploader: user.uid,
-                  metadata: {
-                    createdAt: Timestamp.now(),
-                    updatedAt: Timestamp.now(),
-                  }
-                } as Novel)}
+                onClick={() => {
+                  setCurrentNovel({ 
+                    ...currentNovel,
+                    uploader: user.uid,
+                    metadata: {
+                      createdAt: Timestamp.now(),
+                      updatedAt: Timestamp.now(),
+                    }
+                  } as Novel);
+                  setAuthorsInput([]); // Reset authors input for new novel
+                }}
                 disabled={!isAuthor && !isAdmin}
                 className="bg-gradient-to-r from-[#F1592A] to-[#FF7B4D] hover:from-[#E14A1B] hover:to-[#FF6B3D] text-white transition-all duration-300 hover:scale-105 shadow-lg"
               >
@@ -1766,7 +1778,7 @@ export default function AdminDashboard() {
                   <Input id="extraArt" name="extraArt" value={currentNovel?.extraArt?.join(', ') || ''} onChange={handleInputChange} />
                 </div>
                 <div>
-                  <Label htmlFor="brandName">Brand/Company/Group</Label>
+                  <Label htmlFor="brandName">Published on (Brand/Company/Group)</Label>
                   <Input
                     id="brandName"
                     name="brand.name"
@@ -1835,7 +1847,7 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="publishersOriginal">Original Publisher</Label>
+                  <Label htmlFor="publishersOriginal">Author</Label>
                   <Input
                     id="publishersOriginal"
                     name="publishers.original"
@@ -1849,12 +1861,14 @@ export default function AdminDashboard() {
                           original: value
                         }
                       }));
+                      // Also update the authorsInput array to sync with credits.authors
+                      setAuthorsInput(value ? [value] : []);
                     }}
-                    placeholder="Enter original publisher"
+                    placeholder="Enter Author"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="publishersEnglish">English Publisher</Label>
+                  <Label htmlFor="publishersEnglish">Translated By</Label>
                   <Input
                     id="publishersEnglish"
                     name="publishers.english"
@@ -1869,7 +1883,7 @@ export default function AdminDashboard() {
                         }
                       }));
                     }}
-                    placeholder="Enter English publisher"
+                    placeholder="Enter translator name"
                   />
                 </div>
                 <div>
