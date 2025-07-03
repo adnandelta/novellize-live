@@ -494,51 +494,32 @@ const renderPosts = (section: string) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
           whileHover={{ y: -4, transition: { duration: 0.2 } }}
-          className="relative ml-0 sm:ml-16 lg:ml-20"
+          className="relative ml-0 sm:ml-12 lg:ml-10 border-t border-b border-[#F1592A]/20 py-3"
         >
-          <div className="group relative overflow-visible rounded-3xl backdrop-blur-2xl 
-            bg-gradient-to-br from-white/15 via-white/10 to-white/5 
-            dark:from-slate-900/20 dark:via-slate-800/15 dark:to-slate-900/10
-            hover:from-white/25 hover:via-white/20 hover:to-white/15 
-            dark:hover:from-slate-900/30 dark:hover:via-slate-800/25 dark:hover:to-slate-900/20
-            border border-white/30 dark:border-slate-600/40 hover:border-[#F1592A]/50
-            shadow-2xl shadow-black/10 hover:shadow-3xl hover:shadow-[#F1592A]/20
-            transition-all duration-500 ease-out
-            before:absolute before:inset-0 before:rounded-3xl before:bg-gradient-to-br 
-            before:from-[#F1592A]/5 before:via-transparent before:to-[#D14820]/5 
-            before:opacity-0 before:transition-opacity before:duration-500
-            hover:before:opacity-100">
-            
-            <div className="absolute inset-0 bg-gradient-to-br from-[#F1592A]/8 via-transparent to-[#D14820]/8 
-              opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
-            
-            {/* Glass reflection effect */}
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/20 via-transparent to-transparent 
-              opacity-30 group-hover:opacity-50 transition-opacity duration-500" />
-            
+          <div className="group relative overflow-visible">
             <div className="relative z-10">
               {/* Main Content Area */}
-              <div className="flex flex-col lg:flex-row min-h-[160px]">
+              <div className="flex flex-col lg:flex-row h-[101px]">
                 {/* Left Content Area */}
-                <div className="flex-1 p-4 pb-2 relative">
+                <div className="flex-1 relative">
                   {/* Mobile User Card - Top of post */}
-                  <div className="block sm:hidden mb-4">
+                  <div className="block sm:hidden mb-3">
                     <div className="bg-gradient-to-r from-slate-900/40 via-slate-800/30 to-slate-900/40 
                       dark:from-slate-800/40 dark:via-slate-700/30 dark:to-slate-800/40
-                      backdrop-blur-xl rounded-xl p-3 shadow-lg
+                      backdrop-blur-xl rounded-xl p-2 shadow-lg
                       border border-white/10 dark:border-slate-600/20">
                       <Link href={`/author/${post.authorId}`} className="block group/avatar">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10 ring-2 ring-white/30 dark:ring-slate-300/30 shadow-lg 
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8 ring-2 ring-white/30 dark:ring-slate-300/30 shadow-lg 
                             hover:ring-[#F1592A]/50 transition-all duration-200 group-hover/avatar:scale-105">
                             <AvatarImage src={authorProfiles[post.authorId]?.profilePicture || '/assets/default-avatar.png'} />
-                            <AvatarFallback className="bg-gradient-to-br from-[#F1592A]/80 to-[#D14820]/80 text-white font-bold text-sm">
+                            <AvatarFallback className="bg-gradient-to-br from-[#F1592A]/80 to-[#D14820]/80 text-white font-bold text-xs">
                               {post.author[0]}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-white dark:text-slate-100 font-semibold text-sm leading-tight 
+                              <span className="text-white dark:text-slate-100 font-semibold text-xs leading-tight 
                                 hover:text-[#F1592A] transition-colors duration-200">{post.author}</span>
                               {/* User Role Badge */}
                               {(() => {
@@ -550,20 +531,12 @@ const renderPosts = (section: string) => {
                                 const RoleIcon = roleBadge.icon
                                 
                                 return (
-                                  <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-all duration-300 ${roleBadge.className}`}>
-                                    <RoleIcon className="h-3 w-3" />
+                                  <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium transition-all duration-300 ${roleBadge.className}`}>
+                                    <RoleIcon className="h-2.5 w-2.5" />
                                     <span>{roleBadge.text}</span>
                                   </div>
                                 )
                               })()}
-                            </div>
-                            <div className="text-white/70 dark:text-slate-300/70 text-xs mt-1">
-                              {new Date(post.createdAt).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
                             </div>
                           </div>
                         </div>
@@ -571,35 +544,34 @@ const renderPosts = (section: string) => {
                     </div>
                   </div>
 
-                  {/* Desktop Floating User Details Box - Left side, vertically centered */}
-                  <div className="hidden sm:block absolute top-1/2 -left-4 sm:-left-16 transform -translate-y-1/2 z-20">
+                  {/* Desktop Floating User Details Box - Left side, vertically centered, smaller */}
+                  <div className="hidden sm:block absolute top-1/2 -left-4 sm:-left-12 transform -translate-y-1/2 z-20">
                     <div className="bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 
                       dark:from-slate-800/60 dark:via-slate-700/50 dark:to-slate-800/60
-                      backdrop-blur-xl rounded-2xl p-2 sm:p-4 shadow-2xl min-w-[100px] sm:min-w-[160px]
+                      backdrop-blur-xl rounded-xl p-2 shadow-2xl min-w-[70px] sm:min-w-[100px]
                       border border-white/10 dark:border-slate-600/20
                       transform group-hover:scale-105 transition-all duration-500 
                       shadow-black/20 hover:shadow-black/30
-                      before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br 
+                      before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-br 
                       before:from-white/10 before:via-white/5 before:to-transparent before:opacity-100
-                      after:absolute after:inset-0 after:rounded-2xl after:bg-gradient-to-t 
+                      after:absolute after:inset-0 after:rounded-xl after:bg-gradient-to-t 
                       after:from-[#F1592A]/10 after:via-transparent after:to-[#F1592A]/5 after:opacity-60">
                       <Link href={`/author/${post.authorId}`} className="block group/avatar">
                         <div className="flex flex-col items-center text-center relative z-10">
-                          <Avatar className="h-8 w-8 sm:h-12 sm:w-12 ring-2 ring-white/30 dark:ring-slate-300/30 shadow-lg 
-                            hover:ring-[#F1592A]/50 transition-all duration-200 group-hover/avatar:scale-105 mb-1 sm:mb-2">
+                          <Avatar className="h-6 w-6 sm:h-10 sm:w-10 ring-2 ring-white/30 dark:ring-slate-300/30 shadow-lg 
+                            hover:ring-[#F1592A]/50 transition-all duration-200 group-hover/avatar:scale-105 mb-1">
                             <AvatarImage src={authorProfiles[post.authorId]?.profilePicture || '/assets/default-avatar.png'} />
-                            <AvatarFallback className="bg-gradient-to-br from-[#F1592A]/80 to-[#D14820]/80 text-white font-bold text-sm">
+                            <AvatarFallback className="bg-gradient-to-br from-[#F1592A]/80 to-[#D14820]/80 text-white font-bold text-xs">
                               {post.author[0]}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="text-white dark:text-slate-100 font-semibold text-xs sm:text-sm leading-tight 
+                          <span className="text-white dark:text-slate-100 font-semibold text-xs leading-tight 
                             hover:text-[#F1592A] transition-colors duration-200 drop-shadow-sm">{post.author}</span>
                           
                           {/* User Role Badge */}
                           {(() => {
                             const authorProfile = authorProfiles[post.authorId]
                             if (!authorProfile) {
-                              console.log('No author profile found for:', post.author, post.authorId)
                               return null
                             }
                             
@@ -607,81 +579,77 @@ const renderPosts = (section: string) => {
                             const roleBadge = getRoleBadge(userRole)
                             const RoleIcon = roleBadge.icon
                             
-                            console.log('Role Badge Debug:', {
-                              author: post.author,
-                              authorId: post.authorId,
-                              userRole: userRole,
-                              roleBadgeText: roleBadge.text,
-                              authorProfile: authorProfile
-                            })
-                            
                             return (
-                              <div className={`flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full mt-1 sm:mt-2 text-xs font-medium transition-all duration-300 ${roleBadge.className}`}>
-                                <RoleIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                                <span className="hidden sm:inline">{roleBadge.text}</span>
+                              <div className={`flex items-center justify-center gap-0.5 px-1.5 py-0.5 rounded-full mt-1 text-xs font-medium transition-all duration-300 ${roleBadge.className}`}>
+                                <RoleIcon className="h-2 w-2 sm:h-2.5 sm:w-2.5" />
+                                <span className="hidden sm:inline text-xs">{roleBadge.text}</span>
                               </div>
                             )
                           })()}
-                          
-                          <div className="text-white/70 dark:text-slate-300/70 text-xs mt-1 space-y-0.5 drop-shadow-sm hidden sm:block">
-                            <div>{new Date(post.createdAt).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric'
-                            })}</div>
-                            <div>{new Date(post.createdAt).toLocaleTimeString('en-US', {
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}</div>
-                          </div>
                         </div>
                       </Link>
                     </div>
                   </div>
 
                   {/* Content with left margin for floating box on desktop only */}
-                  <div className="ml-0 sm:ml-0 lg:ml-32 pt-2">
-                    <Link href={`/forum/post/${post.id}?tab=${section}&page=1`}>
-                      <h3 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent 
-                        bg-gradient-to-r from-[#232120] to-[#3E3F3E] dark:from-[#E7E7E8] dark:to-[#C3C3C3]
-                        group-hover:from-[#F1592A] group-hover:to-[#D14820]
-                        transition-all duration-500 mb-4 leading-tight">
-                        {post.title}
-                      </h3>
-                    </Link>
-
-                    <Link href={`/forum/post/${post.id}?tab=${section}&page=1`}>
-                      <p className="text-[#232120] dark:text-[#E7E7E8] text-base leading-relaxed line-clamp-4 mb-4">
-                        {post.content}
-                      </p>
-                    </Link>
-
-                    {/* Community, Replies, and Continue Reading in one line */}
-                                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-4">
-                        <div className="flex items-center gap-2 sm:gap-4">
-                        <Badge variant="outline" 
-                          className="bg-gradient-to-r from-[#F1592A]/15 to-[#D14820]/15 text-[#F1592A] 
-                          border-[#F1592A]/40 group-hover:bg-gradient-to-r group-hover:from-[#F1592A]/25 
-                          group-hover:to-[#D14820]/25 transition-all duration-500 font-medium backdrop-blur-sm">
-                          {post.section}
-                        </Badge>
-                        <Link href={`/forum/post/${post.id}?tab=${section}&page=1`} className="flex items-center space-x-2 text-sm text-[#8E8F8E] dark:text-[#C3C3C3] hover:text-[#F1592A] transition-colors duration-300">
-                          <MessageSquare className="h-4 w-4 text-[#F1592A]" />
-                          <span className="font-medium">{post.repliesCount} {post.repliesCount === 1 ? 'reply' : 'replies'}</span>
-                        </Link>
-                      </div>
-                      
-                      <Link href={`/forum/post/${post.id}?tab=${section}&page=1`} className="flex items-center gap-1.5 text-sm text-[#F1592A] hover:text-[#D14820] font-medium transition-colors duration-300 group/continue">
-                        <span>Continue reading</span>
-                        <ChevronRight className="h-4 w-4 group-hover/continue:translate-x-1 transition-transform duration-300" />
+                  <div className="ml-0 sm:ml-0 lg:ml-24 pt-0 h-full flex flex-col justify-between">
+                    <div>
+                      <Link href={`/forum/post/${post.id}?tab=${section}&page=1`}>
+                        <h3 className="text-base text-lg sm:text-2xl font-bold bg-clip-text text-transparent 
+                          bg-gradient-to-r from-[#F1592A] to-[#D14820]
+                          group-hover:from-[#D14820] group-hover:to-[#F1592A]
+                          transition-all duration-500 leading-tight line-clamp-1 mb-1">
+                          {post.title}{' '}
+                          <Badge variant="outline" 
+                            className="bg-gradient-to-r from-[#F1592A]/15 to-[#D14820]/15 text-[#F1592A] 
+                            border-[#F1592A]/40 group-hover:bg-gradient-to-r group-hover:from-[#F1592A]/25 
+                            group-hover:to-[#D14820]/25 transition-all duration-500 font-medium backdrop-blur-sm text-xs inline-block ml-2">
+                            {post.section}
+                          </Badge>
+                        </h3>
                       </Link>
+
+                      <Link href={`/forum/post/${post.id}?tab=${section}&page=1`}>
+                        <p className="text-[#232120] dark:text-[#E7E7E8] text-s leading-snug line-clamp-2 mb-2">
+                          {post.content}
+                        </p>
+                      </Link>
+                    </div>
+
+                    {/* Replies with Date/Time */}
+                    <div className="flex items-center gap-3">
+                      <Link href={`/forum/post/${post.id}?tab=${section}&page=1`} className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400 hover:text-[#F1592A] transition-colors duration-300">
+                        <MessageSquare className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                        <span className="font-medium">{post.repliesCount} {post.repliesCount === 1 ? 'reply' : 'replies'}</span>
+                      </Link>
+                      <div className="text-gray-500 dark:text-gray-400 text-xs flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        <span>{new Date(post.createdAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric'
+                        })} • {new Date(post.createdAt).toLocaleTimeString('en-US', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}</span>
+                      </div>
+                      {/* Delete button moved here */}
+                      {(userType === 'admin' || user?.uid === post.authorId) && (
+                        <button
+                          onClick={() => setDeleteConfirmPost(post.id)}
+                          className="text-red-500 hover:text-red-600 transition-colors duration-300 flex items-center gap-1"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          <span className="text-xs font-medium">Delete</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                {/* Right Image Area - Seamlessly integrated */}
+                {/* Right Image Area - Match user details box height */}
                 {post.image && (
-                  <div className="w-full h-48 sm:h-auto lg:w-80 relative bg-gradient-to-br from-[#F1592A] to-[#D14820] 
-                    rounded-b-2xl lg:rounded-b-none lg:rounded-r-2xl lg:rounded-l-none overflow-hidden">
+                  <div className="w-full h-20 sm:h-auto lg:w-32 lg:h-[101px] relative bg-gradient-to-br from-[#F1592A] to-[#D14820] 
+                    rounded-r-xl overflow-hidden flex-shrink-0">
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10" />
                     <Image 
                       src={post.image} 
@@ -694,34 +662,19 @@ const renderPosts = (section: string) => {
               </div>
 
               {/* Action buttons positioned in content area */}
-              {(userType === 'admin' || user?.uid === post.authorId) && (
+              {user?.uid === post.authorId && (
                 <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20">
-                  <div className="flex items-center gap-1 sm:gap-2">
-                    {user?.uid === post.authorId && (
-                                              <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => setEditingPost(post.id)}
-                          className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl text-xs font-medium bg-blue-500/15 text-blue-500 
-                            hover:bg-blue-500/25 border border-blue-500/30 hover:border-blue-500/50
-                            backdrop-blur-sm transition-all duration-500 flex items-center gap-1 sm:gap-1.5 shadow-lg"
-                        >
-                          <Edit className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                          <span className="hidden sm:inline">Edit</span>
-                        </motion.button>
-                    )}
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setDeleteConfirmPost(post.id)}
-                      className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl text-xs font-medium bg-red-500/15 text-red-500 
-                        hover:bg-red-500/25 border border-red-500/30 hover:border-red-500/50
-                        backdrop-blur-sm transition-all duration-500 flex items-center gap-1 sm:gap-1.5 shadow-lg"
-                    >
-                      <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                      <span className="hidden sm:inline">Delete</span>
-                    </motion.button>
-                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setEditingPost(post.id)}
+                    className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl text-xs font-medium bg-blue-500/15 text-blue-500 
+                      hover:bg-blue-500/25 border border-blue-500/30 hover:border-blue-500/50
+                      backdrop-blur-sm transition-all duration-500 flex items-center gap-1 sm:gap-1.5 shadow-lg"
+                  >
+                    <Edit className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                    <span className="hidden sm:inline">Edit</span>
+                  </motion.button>
                 </div>
               )}
             </div>
@@ -1377,155 +1330,20 @@ return (
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 container max-w-none mx-auto px-2 sm:px-4 lg:px-6 lg:pr-[336px] py-6 sm:py-12">
+          <div className="flex-1 container max-w-none mx-auto px-2 sm:px-4 lg:px-6 lg:pr-[336px] py-6 sm:py-12 lg:border-l lg:border-[#F1592A]/20">
             <div className="max-w-none space-y-6 sm:space-y-12">
               {/* Header Section */}
               <div className="relative">
-                                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1 h-8 bg-gradient-to-b from-[#F1592A] to-[#D14820] rounded-full" />
-                    <div>
-                      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-clip-text text-transparent 
-                        bg-gradient-to-r from-[#232120] via-[#3E3F3E] to-[#232120] 
-                        dark:from-[#E7E7E8] dark:via-[#C3C3C3] dark:to-[#E7E7E8]">
-              Forum Discussions
-                      </h1>
-                      <p className="text-sm text-[#8E8F8E] dark:text-[#C3C3C3] mt-1">
-                        Connect, share, and discuss with the community
-                      </p>
-                    </div>
-                  </div>
-                  
-            {user && (
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                        <Button className="relative group px-8 py-4 rounded-2xl font-semibold text-white
-                          bg-gradient-to-r from-[#F1592A] to-[#D14820] 
-                          shadow-lg shadow-[#F1592A]/25 hover:shadow-xl hover:shadow-[#F1592A]/40
-                          hover:scale-105 transition-all duration-300 overflow-hidden">
-                          <div className="absolute inset-0 bg-gradient-to-r from-[#D14820] to-[#F1592A] 
-                            opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          <div className="relative z-10 flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                              <Plus className="w-4 h-4" />
-                            </div>
-                            <span>Start Discussion</span>
-                          </div>
-                  </Button>
-                </DialogTrigger>
-                      <DialogContent className="sm:max-w-[700px] max-w-[95vw] mx-auto p-0 
-                        bg-[#E7E7E8]/95 dark:bg-[#232120]/95 backdrop-blur-xl border border-[#F1592A]/20 
-                        shadow-2xl shadow-black/10 rounded-3xl overflow-hidden">
-                        <div className="p-8">
-                          <DialogHeader className="space-y-4 mb-8">
-                            <DialogTitle className="text-3xl font-bold bg-clip-text text-transparent 
-                              bg-gradient-to-r from-[#F1592A] to-[#D14820] text-center">
-                              Start a New Discussion
-                    </DialogTitle>
-                            <p className="text-[#8E8F8E] dark:text-[#C3C3C3] text-center">
-                              Share your thoughts and engage with the community
-                            </p>
-                  </DialogHeader>
-                          
-                          <form onSubmit={handleCreatePost} className="space-y-6">
-                    <div className="space-y-2">
-                              <label className="text-sm font-medium text-[#232120] dark:text-[#E7E7E8]">
-                                Discussion Title
-                              </label>
-                      <Input
-                                placeholder="What would you like to discuss?"
-                        value={newPostTitle}
-                        onChange={(e) => setNewPostTitle(e.target.value)}
-                                className="w-full h-12 px-4 bg-white/60 dark:bg-[#2A2827]/60 backdrop-blur-sm 
-                                  border border-[#F1592A]/30 rounded-xl focus:ring-2 focus:ring-[#F1592A]/50 
-                                  placeholder:text-[#8E8F8E] dark:placeholder:text-[#C3C3C3] transition-all duration-300"
-                      />
-                    </div>
-                            
-                    <div className="space-y-2">
-                              <label className="text-sm font-medium text-[#232120] dark:text-[#E7E7E8]">
-                                Content
-                              </label>
-                      <Textarea
-                                placeholder="Share your thoughts, ask questions, or start a conversation..."
-                        value={newPostContent}
-                        onChange={(e) => setNewPostContent(e.target.value)}
-                                className="w-full h-32 px-4 py-3 bg-white/60 dark:bg-[#2A2827]/60 backdrop-blur-sm 
-                                  border border-[#F1592A]/30 rounded-xl focus:ring-2 focus:ring-[#F1592A]/50 
-                                  placeholder:text-[#8E8F8E] dark:placeholder:text-[#C3C3C3] transition-all duration-300 resize-none"
-                      />
-                    </div>
-                            
-                    <Select value={newPostSection} onValueChange={setNewPostSection}>
-                              <SelectTrigger className="w-full h-12 bg-white/60 dark:bg-[#2A2827]/60 backdrop-blur-sm 
-                                border border-[#F1592A]/30 rounded-xl focus:ring-2 focus:ring-[#F1592A]/50">
-                                <SelectValue placeholder="Choose a category" />
-                      </SelectTrigger>
-                              <SelectContent className="bg-[#E7E7E8]/95 dark:bg-[#232120]/95 backdrop-blur-xl 
-                                border border-[#F1592A]/20 rounded-xl">
-                                <SelectItem value="announcements">📢 Announcements {userType !== 'admin' && '(Admin Only)'}</SelectItem>
-                                <SelectItem value="general">💬 General Discussion</SelectItem>
-                                <SelectItem value="updates">🔄 Updates & News</SelectItem>
-                                <SelectItem value="community">👥 Community</SelectItem>
-                      </SelectContent>
-                    </Select>
-                            
-                      <Button 
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()} 
-                        variant="outline"
-                              className="w-full h-12 bg-white/60 dark:bg-[#2A2827]/60 backdrop-blur-sm 
-                                border border-[#F1592A]/30 rounded-xl hover:bg-[#F1592A]/5 transition-all duration-300"
-                      >
-                        <ImageIcon className="mr-2 h-4 w-4" />
-                        {newPostImage ? 'Change Image' : 'Add Image'}
-                      </Button>
-                      {newPostImage && (
-                              <div className="flex items-center gap-2 text-sm text-[#8E8F8E] dark:text-[#C3C3C3]">
-                                <span className="w-2 h-2 bg-green-500 rounded-full" />
-                                <span className="truncate">{newPostImage.name}</span>
-                    </div>
-                            )}
-                            <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
-                            
-                            <div className="flex gap-4 pt-4">
-                              <Button 
-                                type="button"
-                                variant="outline"
-                                onClick={() => setIsDialogOpen(false)}
-                                className="flex-1 h-12 rounded-xl border border-[#8E8F8E] hover:bg-[#F8F8F8] dark:hover:bg-[#2A2827] transition-all duration-300"
-                              >
-                                Cancel
-                              </Button>
-                    <Button 
-                      type="submit" 
-                                className="flex-1 h-12 rounded-xl font-semibold text-white bg-gradient-to-r from-[#F1592A] to-[#D14820] 
-                                  shadow-lg shadow-[#F1592A]/25 hover:shadow-xl hover:shadow-[#F1592A]/40 hover:scale-[1.02] 
-                                  transition-all duration-300 relative overflow-hidden group"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <>
-                                    <span className="opacity-0">Create Discussion</span>
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          </div>
-                        </>
-                      ) : (
-                                  <>
-                                    <div className="absolute inset-0 bg-gradient-to-r from-[#D14820] to-[#F1592A] 
-                                      opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                    <span className="relative z-10">Create Discussion</span>
-                                  </>
-                      )}
-                    </Button>
-                            </div>
-                  </form>
-                        </div>
-                </DialogContent>
-              </Dialog>
-            )}
-          </div>
+                <div className="flex flex-col items-center text-center mb-4">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-clip-text text-transparent 
+                    bg-gradient-to-r from-[#232120] via-[#3E3F3E] to-[#232120] 
+                    dark:from-[#E7E7E8] dark:via-[#C3C3C3] dark:to-[#E7E7E8]">
+                    Forum Discussions
+                  </h1>
+                  <p className="text-sm text-[#8E8F8E] dark:text-[#C3C3C3]">
+                    Connect, share, and discuss with the community
+                  </p>
+                </div>
               </div>
 
               {/* Modern Tab Navigation */}
@@ -1598,214 +1416,304 @@ return (
             </div>
           </div>
 
-          {/* Sidebar - Fixed to extreme right */}
+                    {/* Sidebar - Fixed to extreme right */}
           <div className="hidden lg:block fixed top-20 right-0 w-80 h-[calc(100vh-5rem)] overflow-y-auto z-40 
             bg-[#F8F8F8]/95 dark:bg-[#1A1918]/95 backdrop-blur-xl border-l border-[#F1592A]/20">
-            <div className="p-6 space-y-6">
-              {/* User Profile Card */}
+            <div className="p-4 space-y-4">
+              
+              {/* Start Discussion Button - Top of Sidebar */}
+              {user && (
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      className="w-full bg-gradient-to-r from-[#F1592A] to-[#D14820] text-white font-semibold py-3 rounded-xl
+                        shadow-lg shadow-[#F1592A]/25 hover:shadow-xl hover:shadow-[#F1592A]/40 hover:scale-[1.02] 
+                        transition-all duration-300 relative overflow-hidden group"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#D14820] to-[#F1592A] 
+                        opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="relative z-10 flex items-center justify-center gap-2">
+                        <Plus className="w-5 h-5" />
+                        <span>Start Discussion</span>
+                      </div>
+                    </Button>
+                  </DialogTrigger>
+                      <DialogContent className="sm:max-w-[700px] max-w-[95vw] mx-auto p-0 
+                        bg-[#E7E7E8]/95 dark:bg-[#232120]/95 backdrop-blur-xl border border-[#F1592A]/20 
+                        shadow-2xl shadow-black/10 rounded-3xl overflow-hidden">
+                        <div className="p-8">
+                          <DialogHeader className="space-y-4 mb-8">
+                            <DialogTitle className="text-3xl font-bold bg-clip-text text-transparent 
+                              bg-gradient-to-r from-[#F1592A] to-[#D14820] text-center">
+                              Start a New Discussion
+                            </DialogTitle>
+                            <p className="text-[#8E8F8E] dark:text-[#C3C3C3] text-center">
+                              Share your thoughts and engage with the community
+                            </p>
+                          </DialogHeader>
+                          
+                          <form onSubmit={handleCreatePost} className="space-y-6">
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium text-[#232120] dark:text-[#E7E7E8]">
+                                Discussion Title
+                              </label>
+                              <Input
+                                placeholder="What would you like to discuss?"
+                                value={newPostTitle}
+                                onChange={(e) => setNewPostTitle(e.target.value)}
+                                className="w-full h-12 px-4 bg-white/60 dark:bg-[#2A2827]/60 backdrop-blur-sm 
+                                  border border-[#F1592A]/30 rounded-xl focus:ring-2 focus:ring-[#F1592A]/50 
+                                  placeholder:text-[#8E8F8E] dark:placeholder:text-[#C3C3C3] transition-all duration-300"
+                              />
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium text-[#232120] dark:text-[#E7E7E8]">
+                                Content
+                              </label>
+                              <Textarea
+                                placeholder="Share your thoughts, ask questions, or start a conversation..."
+                                value={newPostContent}
+                                onChange={(e) => setNewPostContent(e.target.value)}
+                                className="w-full h-32 px-4 py-3 bg-white/60 dark:bg-[#2A2827]/60 backdrop-blur-sm 
+                                  border border-[#F1592A]/30 rounded-xl focus:ring-2 focus:ring-[#F1592A]/50 
+                                  placeholder:text-[#8E8F8E] dark:placeholder:text-[#C3C3C3] transition-all duration-300 resize-none"
+                              />
+                            </div>
+                            
+                            <Select value={newPostSection} onValueChange={setNewPostSection}>
+                              <SelectTrigger className="w-full h-12 bg-white/60 dark:bg-[#2A2827]/60 backdrop-blur-sm 
+                                border border-[#F1592A]/30 rounded-xl focus:ring-2 focus:ring-[#F1592A]/50">
+                                <SelectValue placeholder="Choose a category" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-[#E7E7E8]/95 dark:bg-[#232120]/95 backdrop-blur-xl 
+                                border border-[#F1592A]/20 rounded-xl">
+                                <SelectItem value="announcements">📢 Announcements {userType !== 'admin' && '(Admin Only)'}</SelectItem>
+                                <SelectItem value="general">💬 General Discussion</SelectItem>
+                                <SelectItem value="updates">🔄 Updates & News</SelectItem>
+                                <SelectItem value="community">👥 Community</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            
+                            <Button 
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()} 
+                              variant="outline"
+                              className="w-full h-12 bg-white/60 dark:bg-[#2A2827]/60 backdrop-blur-sm 
+                                border border-[#F1592A]/30 rounded-xl hover:bg-[#F1592A]/5 transition-all duration-300"
+                            >
+                              <ImageIcon className="mr-2 h-4 w-4" />
+                              {newPostImage ? 'Change Image' : 'Add Image'}
+                            </Button>
+                            {newPostImage && (
+                              <div className="flex items-center gap-2 text-sm text-[#8E8F8E] dark:text-[#C3C3C3]">
+                                <span className="w-2 h-2 bg-green-500 rounded-full" />
+                                <span className="truncate">{newPostImage.name}</span>
+                              </div>
+                            )}
+                            <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
+                            
+                            <div className="flex gap-4 pt-4">
+                              <Button 
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsDialogOpen(false)}
+                                className="flex-1 h-12 rounded-xl border border-[#8E8F8E] hover:bg-[#F8F8F8] dark:hover:bg-[#2A2827] transition-all duration-300"
+                              >
+                                Cancel
+                              </Button>
+                              <Button 
+                                type="submit" 
+                                className="flex-1 h-12 rounded-xl font-semibold text-white bg-gradient-to-r from-[#F1592A] to-[#D14820] 
+                                  shadow-lg shadow-[#F1592A]/25 hover:shadow-xl hover:shadow-[#F1592A]/40 hover:scale-[1.02] 
+                                  transition-all duration-300 relative overflow-hidden group"
+                                disabled={isSubmitting}
+                              >
+                                {isSubmitting ? (
+                                  <>
+                                    <span className="opacity-0">Create Discussion</span>
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                      <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-[#D14820] to-[#F1592A] 
+                                      opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    <span className="relative z-10">Create Discussion</span>
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          </form>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+              )}
+
+              {/* User Profile Card - Compact */}
               {user && userProfile && (
-                <div className="relative overflow-hidden rounded-xl backdrop-blur-xl 
-                  bg-gradient-to-br from-white/80 to-white/60 dark:from-[#232120]/80 dark:to-[#232120]/60
-                  border border-[#F1592A]/20 shadow-lg mb-6">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#F1592A]/8 to-[#D14820]/8 opacity-50" />
-                  
-                  <div className="relative z-10 p-6">
-                    <div className="flex flex-col items-center text-center">
-                      {/* Profile Picture */}
-                      <div className="relative mb-4">
-                        <Avatar className="h-20 w-20 ring-4 ring-[#F1592A]/30 shadow-xl hover:ring-[#F1592A]/50 transition-all duration-300">
-                          <AvatarImage src={userProfile.profilePicture || '/assets/default-avatar.png'} alt={userProfile.username} />
-                          <AvatarFallback className={`bg-gradient-to-br ${getAvatarColor(userProfile.username || '')} text-white font-bold text-2xl`}>
-                            {userProfile.username?.[0] || '?'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white dark:border-[#232120] flex items-center justify-center">
-                          <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                        </div>
-                      </div>
-
-                      {/* User Info */}
-                      <div className="mb-4">
-                        <h3 className="text-lg font-bold text-[#232120] dark:text-[#E7E7E8] mb-1">
-                          {userProfile.username || 'Username'}
-                        </h3>
-                        <p className="text-sm text-[#8E8F8E] dark:text-[#C3C3C3] truncate max-w-full">
-                          {user.email}
-                        </p>
-                        <div className="flex items-center justify-center gap-1 mt-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                          <span className="text-xs text-green-600 dark:text-green-400 font-medium">Online</span>
-                        </div>
-                      </div>
-
-                      {/* Stats */}
-                      <div className="grid grid-cols-2 gap-4 w-full mb-4">
-                        <div className="text-center p-3 rounded-lg bg-gradient-to-br from-[#F1592A]/10 to-[#D14820]/10 border border-[#F1592A]/20">
-                          <div className="text-lg font-bold text-[#F1592A]">
-                            {posts.filter(post => post.authorId === user.uid).length}
-                          </div>
-                          <div className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">Posts</div>
-                        </div>
-                        <div className="text-center p-3 rounded-lg bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20">
-                          <div className="text-lg font-bold text-blue-500">
-                            {posts.filter(post => post.authorId === user.uid).reduce((sum, post) => sum + post.repliesCount, 0)}
-                          </div>
-                          <div className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">Replies</div>
-                        </div>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-2 w-full">
-                        <Link href="/user_profile" className="flex-1">
-                          <Button className="w-full bg-gradient-to-r from-[#F1592A] to-[#D14820] text-white text-sm 
-                            rounded-xl hover:from-[#D14820] hover:to-[#F1592A] transition-all duration-300 
-                            shadow-lg hover:shadow-xl hover:scale-105">
-                            <User className="w-4 h-4 mr-2" />
-                            Profile
-                          </Button>
-                        </Link>
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                          className="bg-white/60 dark:bg-[#2A2827]/60 border-[#F1592A]/30 hover:bg-[#F1592A]/10 
-                            hover:border-[#F1592A]/50 transition-all duration-300 rounded-xl"
-                          onClick={() => setIsDialogOpen(true)}
-                        >
-                          <Plus className="w-4 h-4 text-[#F1592A]" />
-                        </Button>
+                <div className="bg-gradient-to-r from-white/80 to-white/60 dark:from-[#232120]/80 dark:to-[#232120]/60
+                  border border-[#F1592A]/20 rounded-xl p-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10 ring-2 ring-[#F1592A]/30">
+                      <AvatarImage src={userProfile.profilePicture || '/assets/default-avatar.png'} alt={userProfile.username} />
+                      <AvatarFallback className={`bg-gradient-to-br ${getAvatarColor(userProfile.username || '')} text-white font-bold text-sm`}>
+                        {userProfile.username?.[0] || '?'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-bold text-[#232120] dark:text-[#E7E7E8] truncate">
+                        {userProfile.username || 'Username'}
+                      </h3>
+                      <div className="flex items-center gap-2 text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
+                        <span>{posts.filter(post => post.authorId === user.uid).length} posts</span>
+                        <span>•</span>
+                        <span>{posts.filter(post => post.authorId === user.uid).reduce((sum, post) => sum + post.repliesCount, 0)} replies</span>
                       </div>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Featured Resources */}
-              <div className="relative overflow-hidden rounded-xl backdrop-blur-xl 
-                bg-gradient-to-r from-white/80 to-white/60 dark:from-[#232120]/80 dark:to-[#232120]/60
-                border border-[#F1592A]/20 shadow-lg mb-6">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#F1592A]/5 to-transparent opacity-50" />
-                
-                <div className="relative z-10 p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 
-                      flex items-center justify-center shadow-lg">
-                      <BookOpen className="w-4 h-4 text-white" />
-                    </div>
-                    <h3 className="text-lg font-bold text-[#232120] dark:text-[#E7E7E8]">
-                      Featured Resources
-                    </h3>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    {resources.filter(r => r.featured).slice(0, 3).map((resource, index) => {
-                      const TypeIcon = getTypeIcon(resource.type)
-                      return (
-                        <motion.div
-                          key={resource.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                          className="flex items-start gap-3 p-3 rounded-lg hover:bg-[#F1592A]/5 transition-colors duration-200 cursor-pointer"
-                          onClick={() => {
-                            router.push(`/forum/resources/${resource.id}`)
-                          }}
-                        >
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/20 to-purple-600/20 
-                            flex items-center justify-center text-sm font-medium">
-                            <TypeIcon className="w-4 h-4 text-purple-500" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-[#232120] dark:text-[#E7E7E8] line-clamp-2">
-                              {resource.title}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <p className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
-                                {resource.category}
-                              </p>
-                            </div>
-                          </div>
-                        </motion.div>
-                      )
-                    })}
-                    
-                    <Link href="/forum?tab=resources">
-                      <div className="mt-4 p-3 rounded-lg bg-gradient-to-r from-[#F1592A]/10 to-[#D14820]/10 
-                        hover:from-[#F1592A]/20 hover:to-[#D14820]/20 border border-[#F1592A]/20 
-                        text-center transition-all duration-300 cursor-pointer group">
-                        <span className="text-sm font-medium text-[#F1592A] group-hover:text-[#D14820]">
-                          View All Resources
-                        </span>
-                      </div>
-                    </Link>
-                  </div>
-                </div>
+              {/* Recent Posts Header */}
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-[#232120] dark:text-[#E7E7E8] uppercase tracking-wider">
+                  Recent Posts
+                </h3>
+                <button className="text-xs text-[#F1592A] hover:text-[#D14820] font-medium">
+                  Clear
+                </button>
               </div>
 
-              {/* Latest Replies */}
-              <div className="relative overflow-hidden rounded-xl backdrop-blur-xl 
-                bg-gradient-to-r from-white/80 to-white/60 dark:from-[#232120]/80 dark:to-[#232120]/60
-                border border-[#F1592A]/20 shadow-lg">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#F1592A]/5 to-transparent opacity-50" />
-                
-                <div className="relative z-10 p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#F1592A] to-[#D14820] 
-                      flex items-center justify-center shadow-lg">
-                      <MessageSquare className="w-4 h-4 text-white" />
+              {/* Recent Posts List */}
+              <div className="space-y-2">
+                {posts.slice(0, 8).map((post, index) => (
+                  <motion.div
+                    key={post.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="group flex items-start gap-3 p-2 rounded-lg hover:bg-[#F1592A]/5 transition-colors duration-200 cursor-pointer"
+                    onClick={() => {
+                      router.push(`/forum/post/${post.id}?tab=${post.section}&page=1`)
+                    }}
+                  >
+                    {/* Platform/Category Icon */}
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-[#F1592A]/20 to-[#D14820]/20 
+                      flex items-center justify-center mt-0.5">
+                      <span className="text-xs font-bold text-[#F1592A]">
+                        {post.section === 'announcements' && '📢'}
+                        {post.section === 'general' && '💬'}
+                        {post.section === 'updates' && '🔄'}
+                        {post.section === 'community' && '👥'}
+                        {post.section === 'resources' && '📚'}
+                      </span>
                     </div>
-                    <h3 className="text-lg font-bold text-[#232120] dark:text-[#E7E7E8]">
-                      Latest Replies
-                    </h3>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    {posts.slice(0, 5).map((post, index) => (
-                      <motion.div
-                        key={post.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="flex items-start gap-3 p-3 rounded-lg hover:bg-[#F1592A]/5 transition-colors duration-200 cursor-pointer"
-                        onClick={() => {
-                          router.push(`/forum/post/${post.id}?tab=${post.section}&page=1`)
-                        }}
-                      >
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#F1592A]/20 to-[#D14820]/20 
-                          flex items-center justify-center text-sm font-medium">
-                          {post.author[0]}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-[#232120] dark:text-[#E7E7E8]">
-                            <span className="font-medium">{post.author}</span>{' '}
-                            <span className="text-[#8E8F8E] dark:text-[#C3C3C3]">
-                              {post.repliesCount > 0 ? 'replied to' : 'started'}
-                            </span>{' '}
-                            <span className="font-medium text-[#F1592A] truncate block">{post.title}</span>
-                          </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <p className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
-                              {new Date(post.createdAt).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </p>
-                            {post.repliesCount > 0 && (
-                              <>
-                                <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">•</span>
-                                <span className="text-xs text-[#F1592A] font-medium">
-                                  {post.repliesCount} {post.repliesCount === 1 ? 'reply' : 'replies'}
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-              </motion.div>
-                    ))}
-            </div>
-                </div>
+                    
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3] font-medium">
+                          r/{post.section}
+                        </span>
+                        <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">•</span>
+                        <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
+                          {(() => {
+                            const now = new Date()
+                            const postDate = new Date(post.createdAt)
+                            const diffInHours = Math.floor((now.getTime() - postDate.getTime()) / (1000 * 60 * 60))
+                            const diffInDays = Math.floor(diffInHours / 24)
+                            const diffInMonths = Math.floor(diffInDays / 30)
+                            
+                            if (diffInMonths > 0) return `${diffInMonths} mo. ago`
+                            if (diffInDays > 0) return `${diffInDays} d. ago`
+                            if (diffInHours > 0) return `${diffInHours} hr. ago`
+                            return 'Just now'
+                          })()}
+                        </span>
+                      </div>
+                      
+                      <h4 className="text-sm font-medium text-[#232120] dark:text-[#E7E7E8] line-clamp-2 group-hover:text-[#F1592A] transition-colors duration-200">
+                        {post.title}
+                      </h4>
+                      
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
+                          {post.repliesCount} comments
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
+
+                             {/* View All Link */}
+               <div className="pt-2 border-t border-[#F1592A]/20">
+                 <button className="w-full text-xs text-[#F1592A] hover:text-[#D14820] font-medium py-2 text-center">
+                   View all recent posts
+                 </button>
+               </div>
+
+               {/* Resources Section */}
+               <div className="mt-6">
+                 <div className="flex items-center justify-between mb-3">
+                   <h3 className="text-sm font-bold text-[#232120] dark:text-[#E7E7E8] uppercase tracking-wider">
+                     Resources
+                   </h3>
+                   <Link href="/forum/resources" className="text-xs text-[#F1592A] hover:text-[#D14820] font-medium">
+                     View All
+                   </Link>
+                 </div>
+
+                 <div className="space-y-2">
+                   {resources.slice(0, 5).map((resource, index) => {
+                     const TypeIcon = getTypeIcon(resource.type)
+                     return (
+                       <motion.div
+                         key={resource.id}
+                         initial={{ opacity: 0, x: -10 }}
+                         animate={{ opacity: 1, x: 0 }}
+                         transition={{ delay: index * 0.05 }}
+                         className="group flex items-start gap-3 p-2 rounded-lg hover:bg-[#F1592A]/5 transition-colors duration-200 cursor-pointer"
+                         onClick={() => {
+                           router.push(`/forum/resources/${resource.id}`)
+                         }}
+                       >
+                         {/* Resource Type Icon */}
+                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/20 to-purple-600/20 
+                           flex items-center justify-center mt-0.5">
+                           <TypeIcon className="w-4 h-4 text-purple-500" />
+                         </div>
+                         
+                         {/* Content */}
+                         <div className="flex-1 min-w-0">
+                           <div className="flex items-center gap-2 mb-1">
+                             <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3] font-medium">
+                               {resource.category}
+                             </span>
+                             <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">•</span>
+                             <div className={`w-2 h-2 rounded-full ${getDifficultyColor(resource.difficulty)}`} />
+                             <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3] capitalize">
+                               {resource.difficulty}
+                             </span>
+                           </div>
+                           
+                           <h4 className="text-sm font-medium text-[#232120] dark:text-[#E7E7E8] line-clamp-2 group-hover:text-[#F1592A] transition-colors duration-200">
+                             {resource.title}
+                           </h4>
+                           
+                           <div className="flex items-center gap-3 mt-1">
+                             <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
+                               {resource.estimatedReadTime} min read
+                             </span>
+                           </div>
+                         </div>
+                       </motion.div>
+                     )
+                   })}
+                 </div>
+               </div>
             </div>
           </div>
         </div>
