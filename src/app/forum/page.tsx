@@ -493,8 +493,14 @@ const renderPosts = (section: string) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          whileHover={{ y: -4, transition: { duration: 0.2 } }}
-          className="relative ml-0 sm:ml-12 lg:ml-10 border-t border-b border-[#F1592A]/20 py-3"
+          whileHover={{ 
+            y: -4, 
+            scale: 1.02,
+            transition: { duration: 0.2 } 
+          }}
+          className="relative ml-0 sm:ml-12 lg:ml-10 border-t border-b border-[#F1592A]/20 py-3
+            hover:border hover:border-[#F1592A]/50 hover:rounded-xl hover:px-4 hover:shadow-2xl hover:shadow-[#F1592A]/30 
+            transition-all duration-300 hover:bg-white/5 hover:dark:bg-slate-800/5 hover:backdrop-blur-sm group"
         >
           <div className="group relative overflow-visible">
             <div className="relative z-10">
@@ -598,7 +604,7 @@ const renderPosts = (section: string) => {
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="text-base text-lg sm:text-2xl font-bold bg-clip-text text-transparent 
                             bg-gradient-to-r from-[#F1592A] to-[#D14820]
-                            group-hover:from-[#D14820] group-hover:to-[#F1592A]
+                            group-hover:from-blue-500 group-hover:to-blue-600
                             transition-all duration-500 leading-tight line-clamp-1">
                             {post.title}
                           </h3>
@@ -613,8 +619,8 @@ const renderPosts = (section: string) => {
 
                       <Link href={`/forum/post/${post.id}?tab=${section}&page=1`}>
                         <p className="text-[#232120] dark:text-[#E7E7E8] text-s leading-snug line-clamp-2 mb-2 pr-4">
-                          {post.content.length > 240 ? `${post.content.substring(0, 240)}... ` : post.content}
-                          {post.content.length > 240 && (
+                          {post.content.length > 210 ? `${post.content.substring(0, 210)}... ` : post.content}
+                          {post.content.length > 210 && (
                             <span className="text-[#F1592A] hover:text-[#D14820] font-medium transition-colors duration-200">
                               read more
                             </span>
@@ -1718,7 +1724,7 @@ return (
                  </div>
 
                  <div className="space-y-2">
-                   {resources.slice(0, 5).map((resource, index) => {
+                   {resources.slice(0, 3).map((resource, index) => {
                      const TypeIcon = getTypeIcon(resource.type)
                      return (
                        <motion.div
