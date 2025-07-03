@@ -548,7 +548,7 @@ const renderPosts = (section: string) => {
                   <div className="hidden sm:block absolute top-1/2 -left-4 sm:-left-12 transform -translate-y-1/2 z-20">
                     <div className="bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 
                       dark:from-slate-800/60 dark:via-slate-700/50 dark:to-slate-800/60
-                      backdrop-blur-xl rounded-xl p-2 shadow-2xl min-w-[70px] sm:min-w-[100px]
+                      backdrop-blur-xl rounded-xl p-2 shadow-2xl min-w-[90px] sm:min-w-[120px]
                       border border-white/10 dark:border-slate-600/20
                       transform group-hover:scale-105 transition-all duration-500 
                       shadow-black/20 hover:shadow-black/30
@@ -595,23 +595,30 @@ const renderPosts = (section: string) => {
                   <div className="ml-0 sm:ml-0 lg:ml-24 pt-0 h-full flex flex-col justify-between">
                     <div>
                       <Link href={`/forum/post/${post.id}?tab=${section}&page=1`}>
-                        <h3 className="text-base text-lg sm:text-2xl font-bold bg-clip-text text-transparent 
-                          bg-gradient-to-r from-[#F1592A] to-[#D14820]
-                          group-hover:from-[#D14820] group-hover:to-[#F1592A]
-                          transition-all duration-500 leading-tight line-clamp-1 mb-1">
-                          {post.title}{' '}
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-base text-lg sm:text-2xl font-bold bg-clip-text text-transparent 
+                            bg-gradient-to-r from-[#F1592A] to-[#D14820]
+                            group-hover:from-[#D14820] group-hover:to-[#F1592A]
+                            transition-all duration-500 leading-tight line-clamp-1">
+                            {post.title}
+                          </h3>
                           <Badge variant="outline" 
                             className="bg-gradient-to-r from-[#F1592A]/15 to-[#D14820]/15 text-[#F1592A] 
                             border-[#F1592A]/40 group-hover:bg-gradient-to-r group-hover:from-[#F1592A]/25 
-                            group-hover:to-[#D14820]/25 transition-all duration-500 font-medium backdrop-blur-sm text-xs inline-block ml-2">
+                            group-hover:to-[#D14820]/25 transition-all duration-500 font-medium backdrop-blur-sm text-xs flex-shrink-0">
                             {post.section}
                           </Badge>
-                        </h3>
+                        </div>
                       </Link>
 
                       <Link href={`/forum/post/${post.id}?tab=${section}&page=1`}>
-                        <p className="text-[#232120] dark:text-[#E7E7E8] text-s leading-snug line-clamp-2 mb-2">
-                          {post.content}
+                        <p className="text-[#232120] dark:text-[#E7E7E8] text-s leading-snug line-clamp-2 mb-2 pr-4">
+                          {post.content.length > 240 ? `${post.content.substring(0, 240)}... ` : post.content}
+                          {post.content.length > 240 && (
+                            <span className="text-[#F1592A] hover:text-[#D14820] font-medium transition-colors duration-200">
+                              read more
+                            </span>
+                          )}
                         </p>
                       </Link>
                     </div>
@@ -632,16 +639,28 @@ const renderPosts = (section: string) => {
                           minute: '2-digit'
                         })}</span>
                       </div>
-                      {/* Delete button moved here */}
-                      {(userType === 'admin' || user?.uid === post.authorId) && (
-                        <button
-                          onClick={() => setDeleteConfirmPost(post.id)}
-                          className="text-red-500 hover:text-red-600 transition-colors duration-300 flex items-center gap-1"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                          <span className="text-xs font-medium">Delete</span>
-                        </button>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {/* Edit button */}
+                        {user?.uid === post.authorId && (
+                          <button
+                            onClick={() => setEditingPost(post.id)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-0.5 rounded-md transition-colors duration-300 flex items-center gap-1"
+                          >
+                            <Edit className="h-3 w-3" />
+                            <span className="text-xs font-medium">Edit</span>
+                          </button>
+                        )}
+                        {/* Delete button moved here */}
+                        {(userType === 'admin' || user?.uid === post.authorId) && (
+                          <button
+                            onClick={() => setDeleteConfirmPost(post.id)}
+                            className="bg-red-500 hover:bg-red-600 text-white px-2 py-0.5 rounded-md transition-colors duration-300 flex items-center gap-1"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            <span className="text-xs font-medium">Delete</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -661,22 +680,7 @@ const renderPosts = (section: string) => {
                 )}
               </div>
 
-              {/* Action buttons positioned in content area */}
-              {user?.uid === post.authorId && (
-                <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setEditingPost(post.id)}
-                    className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl text-xs font-medium bg-blue-500/15 text-blue-500 
-                      hover:bg-blue-500/25 border border-blue-500/30 hover:border-blue-500/50
-                      backdrop-blur-sm transition-all duration-500 flex items-center gap-1 sm:gap-1.5 shadow-lg"
-                  >
-                    <Edit className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                    <span className="hidden sm:inline">Edit</span>
-                  </motion.button>
-                </div>
-              )}
+
             </div>
           </div>
         </motion.div>
@@ -1093,109 +1097,115 @@ return (
                     </Avatar>
                       </div>
                   </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-72 p-0 bg-[#E7E7E8]/95 dark:bg-[#232120]/95 backdrop-blur-xl 
+                    <DropdownMenuContent className="w-64 p-0 bg-[#E7E7E8]/95 dark:bg-[#232120]/95 backdrop-blur-xl 
                       border border-[#F1592A]/20 dark:border-[#F1592A]/20 shadow-2xl shadow-black/10 rounded-2xl" align="end">
                     {/* User Header Section */}
-                      <div className="p-6 bg-gradient-to-r from-[#F1592A]/5 to-[#D14820]/5 rounded-t-2xl">
-                        <div className="flex items-center gap-2 sm:gap-4">
-                          <Avatar className="h-16 w-16 ring-2 ring-[#F1592A]/30 shadow-lg">
-                          <AvatarImage src={userProfile?.profilePicture} alt={userProfile?.username} />
-                            <AvatarFallback className="bg-gradient-to-br from-[#F1592A] to-[#D14820] text-white text-lg font-bold">
-                              {userProfile?.username?.[0] || '?'}
-                            </AvatarFallback>
-                        </Avatar>
-                          <div className="flex-1">
-                            <p className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                              {userProfile?.username || "Username"}
-                            </p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
-                              {user.email}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                              <span className="text-xs text-slate-500 dark:text-slate-400">Online</span>
-                            </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Welcome Banner */}
-                      <div className="mx-4 my-4 bg-gradient-to-r from-[#F1592A]/10 to-[#D14820]/10 
-                        rounded-xl overflow-hidden border border-[#F1592A]/20">
-                        <div className="p-4 relative">
-                        <div className="flex justify-between items-center">
+                      <div className="p-4 bg-[#1E1E24]">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-14 w-14 border-2 border-[#F1592A]">
+                            <AvatarImage src={userProfile?.profilePicture} alt={userProfile?.username} />
+                            <AvatarFallback className="bg-[#2A2A30] text-[#F1592A]">{userProfile?.username?.[0] || '?'}</AvatarFallback>
+                          </Avatar>
                           <div>
-                              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                                Welcome to Forum!
-                              </h3>
-                              <p className="text-xs text-slate-500 dark:text-slate-400">
-                                Join the discussion
-                              </p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-base font-semibold">{userProfile?.username || "Username"}</p>
+                              {userType === 'admin' && (
+                                <span className="bg-blue-500 text-xs px-1.5 py-0.5 rounded text-white">A</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-400">{user.email}</p>
+                            
+                            {/* Points Display - Removed coin icon, kept only heart */}
+                            <div className="flex items-center mt-1">
+                              <div className="flex items-center gap-1">
+                                <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+                                  <span className="text-xs">♥</span>
+                                </div>
+                                <span className="text-sm">1</span>
+                              </div>
+                            </div>
                           </div>
-                          <Button 
-                              className="bg-gradient-to-r from-[#F1592A] to-[#D14820] text-white text-xs 
-                                rounded-lg px-3 h-8 font-medium shadow-sm hover:shadow-md
-                                hover:scale-105 transition-all duration-200"
-                            onClick={() => router.push('/forum')}
-                          >
-                            EXPLORE
-                  </Button>
-                        </div>
-                        
-                        {/* Background Icon */}
-                          <div className="absolute right-2 bottom-1 opacity-10">
-                            <MessageSquare className="h-10 w-10" />
                         </div>
                       </div>
-                    </div>
+                      
+                      {/* Membership Banner - changed to Welcome Message */}
+                      <div className="mx-3 my-3 bg-[#2A2A30] rounded-lg overflow-hidden">
+                        <div className="p-3 relative">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h3 className="text-sm font-medium">Welcome to Novellize!</h3>
+                              <p className="text-xs text-gray-400">Your home for web novels</p>
+                            </div>
+                            <Button 
+                              className="bg-[#F1592A] hover:bg-[#E44D1F] text-white text-xs rounded-md px-3 h-7"
+                              onClick={() => router.push('/browse')}
+                            >
+                              EXPLORE
+                            </Button>
+                          </div>
+                          
+                          {/* Background Icon */}
+                          <div className="absolute right-2 bottom-0 opacity-20">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
                     
                     {/* Menu Items */}
-                      <div className="px-2 py-2 space-y-1">
-                        <DropdownMenuItem className="rounded-xl py-3 px-4 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 
-                          transition-colors duration-200 cursor-pointer group" onClick={() => router.push('/user_profile')}>
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center 
-                              group-hover:bg-blue-500/20 transition-colors duration-200">
-                              <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <span className="font-medium text-slate-700 dark:text-slate-300">My Profile</span>
-                          </div>
-                  </DropdownMenuItem>
-                      
-                        <DropdownMenuItem className="rounded-xl py-3 px-4 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 
-                          transition-colors duration-200 cursor-pointer group" onClick={() => router.push('/browse')}>
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center 
-                              group-hover:bg-green-500/20 transition-colors duration-200">
-                              <BookOpen className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            </div>
-                            <span className="font-medium text-slate-700 dark:text-slate-300">Browse All</span>
-                          </div>
+                    <div className="px-1 py-2">
+                      <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={() => router.push('/user_profile')}>
+                        <User className="mr-2 h-4 w-4" />
+                        <span>My Profile</span>
                       </DropdownMenuItem>
                       
-                        <DropdownMenuItem className="rounded-xl py-3 px-4 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 
-                          transition-colors duration-200 cursor-pointer group">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center 
-                              group-hover:bg-purple-500/20 transition-colors duration-200">
-                              <Library className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            <span className="font-medium text-slate-700 dark:text-slate-300">Library</span>
-                          </div>
+                      <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={() => router.push('/browse')}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="m21 21-6-6m6 6v-4.8m0 4.8h-4.8" />
+                          <path d="M3 16.2V21m0-4.8V21h4.8" />
+                          <path d="M21 7.8V3m0 4.8V3h-4.8" />
+                          <path d="M3 7.8V3m0 4.8V3h4.8" />
+                        </svg>
+                        <span>Browse All</span>
                       </DropdownMenuItem>
                       
-                        <DropdownMenuSeparator className="bg-slate-200/50 dark:bg-slate-700/50 my-2" />
-                        
-                        <DropdownMenuItem className="rounded-xl py-3 px-4 hover:bg-red-50 dark:hover:bg-red-900/20 
-                          transition-colors duration-200 cursor-pointer group" onClick={handleLogout}>
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center 
-                              group-hover:bg-red-500/20 transition-colors duration-200">
-                              <LogOut className="h-4 w-4 text-red-600 dark:text-red-400" />
-                            </div>
-                            <span className="font-medium text-red-700 dark:text-red-400">Sign Out</span>
-                          </div>
-                  </DropdownMenuItem>
+                      <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5C2 7 4 5 6.5 5H18c2.2 0 4 1.8 4 4v8Z" />
+                          <polyline points="15,9 18,9 18,11" />
+                          <path d="M6.5 5C9 5 11 7 11 9.5V17a2 2 0 0 1-2 2v0" />
+                          <line x1="6" y1="10" x2="7" y2="10" />
+                        </svg>
+                        <span>Inbox</span>
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuSeparator className="bg-[#2A2A30]" />
+                      
+                      {userType === 'admin' && (
+                        <>
+                          <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={() => router.push('/admin')}>
+                            <ChevronsLeftRight className="mr-2 h-4 w-4" />
+                            <span>Admin Console</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator className="bg-[#2A2A30]" />
+                        </>
+                      )}
+                      
+                      {userType === 'author' && (
+                        <>
+                          <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={() => router.push('/admin')}>
+                            <ChevronsLeftRight className="mr-2 h-4 w-4" />
+                            <span>Author Console</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator className="bg-[#2A2A30]" />
+                        </>
+                      )}
+                      
+                      <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Sign Out</span>
+                      </DropdownMenuItem>
                     </div>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -1330,8 +1340,8 @@ return (
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 container max-w-none mx-auto px-2 sm:px-4 lg:px-6 lg:pr-[336px] py-6 sm:py-12 lg:border-l lg:border-[#F1592A]/20">
-            <div className="max-w-none space-y-6 sm:space-y-12">
+          <div className="flex-1 container max-w-none mx-auto px-[18px] lg:pr-[336px] py-[18px] lg:border-l lg:border-[#F1592A]/20">
+            <div className="max-w-none space-y-3">
               {/* Header Section */}
               <div className="relative">
                 <div className="flex flex-col items-center text-center mb-4">
@@ -1347,7 +1357,7 @@ return (
               </div>
 
               {/* Modern Tab Navigation */}
-              <div className="relative mb-6 sm:mb-8">
+              <div className="relative mb-3">
                                   <div className="flex items-center justify-center overflow-x-auto">
                     <div className="relative p-1 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm 
                       rounded-2xl border border-white/20 dark:border-slate-700/50 shadow-lg min-w-max">
@@ -1388,6 +1398,7 @@ return (
                   </div>
                 </div>
               </div>
+<br />
 
               {/* Content Area */}
               <div className="relative">
@@ -1551,25 +1562,65 @@ return (
                     </Dialog>
               )}
 
-              {/* User Profile Card - Compact */}
+                            {/* User Profile Card - Dark style like post content */}
               {user && userProfile && (
-                <div className="bg-gradient-to-r from-white/80 to-white/60 dark:from-[#232120]/80 dark:to-[#232120]/60
-                  border border-[#F1592A]/20 rounded-xl p-3 mb-4">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10 ring-2 ring-[#F1592A]/30">
-                      <AvatarImage src={userProfile.profilePicture || '/assets/default-avatar.png'} alt={userProfile.username} />
-                      <AvatarFallback className={`bg-gradient-to-br ${getAvatarColor(userProfile.username || '')} text-white font-bold text-sm`}>
-                        {userProfile.username?.[0] || '?'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-bold text-[#232120] dark:text-[#E7E7E8] truncate">
-                        {userProfile.username || 'Username'}
-                      </h3>
-                      <div className="flex items-center gap-2 text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
-                        <span>{posts.filter(post => post.authorId === user.uid).length} posts</span>
-                        <span>•</span>
-                        <span>{posts.filter(post => post.authorId === user.uid).reduce((sum, post) => sum + post.repliesCount, 0)} replies</span>
+                <div className="mb-4">
+                  <div className="bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 
+                    dark:from-slate-800/60 dark:via-slate-700/50 dark:to-slate-800/60
+                    backdrop-blur-xl rounded-xl p-3 shadow-2xl mb-2 w-32 mx-auto
+                    border border-white/10 dark:border-slate-600/20
+                    hover:scale-105 transition-all duration-500 
+                    shadow-black/20 hover:shadow-black/30
+                    before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-br 
+                    before:from-white/10 before:via-white/5 before:to-transparent before:opacity-100
+                    after:absolute after:inset-0 after:rounded-xl after:bg-gradient-to-t 
+                    after:from-[#F1592A]/10 after:via-transparent after:to-[#F1592A]/5 after:opacity-60 relative">
+                    <Link href={`/author/${user.uid}`} className="block group/avatar">
+                      <div className="flex flex-col items-center text-center relative z-10">
+                        <Avatar className="h-12 w-12 ring-2 ring-white/30 dark:ring-slate-300/30 shadow-lg 
+                          hover:ring-[#F1592A]/50 transition-all duration-200 group-hover/avatar:scale-105 mb-2">
+                          <AvatarImage src={userProfile.profilePicture || '/assets/default-avatar.png'} />
+                          <AvatarFallback className="bg-gradient-to-br from-[#F1592A]/80 to-[#D14820]/80 text-white font-bold text-sm">
+                            {userProfile.username?.[0] || '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-white dark:text-slate-100 font-semibold text-sm leading-tight 
+                          hover:text-[#F1592A] transition-colors duration-200 drop-shadow-sm mb-1">
+                          {userProfile.username}
+                        </span>
+                        
+                        {/* User Role Badge */}
+                        {(() => {
+                          const roleBadge = getRoleBadge(userType)
+                          const RoleIcon = roleBadge.icon
+                          
+                          return (
+                            <div className={`flex items-center justify-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-all duration-300 ${roleBadge.className}`}>
+                              <RoleIcon className="h-3 w-3" />
+                              <span>{roleBadge.text}</span>
+                            </div>
+                          )
+                        })()}
+                      </div>
+                    </Link>
+                  </div>
+                  
+                  {/* Stats outside the box */}
+                  <div className="flex items-center justify-between px-2">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-[#232120] dark:text-[#E7E7E8]">
+                        {posts.filter(post => post.authorId === user.uid).length}
+                      </div>
+                      <div className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3] uppercase tracking-wide">
+                        Posts
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-[#232120] dark:text-[#E7E7E8]">
+                        {posts.filter(post => post.authorId === user.uid).reduce((sum, post) => sum + post.repliesCount, 0)}
+                      </div>
+                      <div className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3] uppercase tracking-wide">
+                        Replies
                       </div>
                     </div>
                   </div>
