@@ -1672,7 +1672,7 @@ return (
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3] font-medium">
-                          r/{post.section}
+                          {post.section}
                         </span>
                         <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">•</span>
                         <span className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
