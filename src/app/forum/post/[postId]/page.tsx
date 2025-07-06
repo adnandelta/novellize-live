@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Search, Moon, Sun, LogOut, User, Home, MessageSquare, ChevronDown, ChevronUp, ChevronLeft, ChevronsLeftRight, Flame, BookOpen, Crown, Sparkles, Menu, X, Library, Trash2 } from "lucide-react"
+import { GiQuillInk } from "react-icons/gi"
 import Link from "next/link"
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -219,6 +220,34 @@ const getAvatarColor = (name: string) => {
   return colors[index]
 }
 
+// Get role badge styling
+const getRoleBadge = (userType: string) => {
+  // Normalize the userType to handle any casing issues
+  const normalizedType = userType?.toLowerCase().trim() || 'user'
+  
+  switch (normalizedType) {
+    case 'admin':
+      return {
+        icon: Crown,
+        text: 'Admin',
+        className: 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 backdrop-blur-md text-yellow-200 border border-yellow-400/50 shadow-lg shadow-yellow-400/20 ring-1 ring-yellow-400/20'
+      }
+    case 'author':
+      return {
+        icon: GiQuillInk,
+        text: 'Author',
+        className: 'bg-black/20 backdrop-blur-md text-emerald-300 border border-emerald-400/30 shadow-lg shadow-emerald-400/10'
+      }
+    case 'user':
+    default:
+      return {
+        icon: User,
+        text: 'Member',
+        className: 'bg-black/20 backdrop-blur-md text-slate-300 border border-slate-400/30 shadow-lg shadow-slate-400/10'
+      }
+  }
+}
+
 // Determine profile route based on user type
 const getProfileRoute = (authorId: string, userType: string) => {
   if (userType === 'author') {
@@ -227,14 +256,15 @@ const getProfileRoute = (authorId: string, userType: string) => {
   return `/user_profile?userId=${authorId}`
 }
 
-const ReplyComponent = ({ reply, allReplies, onReply, userProfiles, currentUser, currentUserType, onDeleteReply }: { 
+const ReplyComponent = ({ reply, allReplies, onReply, userProfiles, currentUser, currentUserType, onDeleteReply, depth = 0 }: { 
   reply: Reply, 
   allReplies: Reply[], 
   onReply: (parentReplyId: string, content: string) => void, 
   userProfiles: {[key: string]: {profilePicture: string, username: string, userType: string}},
   currentUser: any,
   currentUserType: string,
-  onDeleteReply: (replyId: string) => void
+  onDeleteReply: (replyId: string) => void,
+  depth?: number
 }) => {
   const [isReplying, setIsReplying] = useState(false)
   const [replyContent, setReplyContent] = useState('')
@@ -271,189 +301,151 @@ const ReplyComponent = ({ reply, allReplies, onReply, userProfiles, currentUser,
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      whileHover={{ y: -2, transition: { duration: 0.2 } }}
-      className="mt-4 sm:mt-6 first:mt-0"
+      transition={{ duration: 0.15 }}
+      className="relative"
     >
-      <div className="group relative overflow-hidden rounded-3xl backdrop-blur-sm 
-        bg-gradient-to-br from-white/60 via-white/40 to-white/20 
-        dark:from-[#232120]/60 dark:via-[#232120]/40 dark:to-[#232120]/20
-        hover:from-white/80 hover:via-white/60 hover:to-white/40
-        dark:hover:from-[#232120]/80 dark:hover:via-[#232120]/60 dark:hover:to-[#232120]/40
-        border-0 shadow-sm hover:shadow-lg hover:shadow-[#F1592A]/5
-        transition-all duration-300 ease-in-out"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-[#F1592A]/2 via-transparent to-[#D14820]/2 
-          opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
-        <div className="relative z-10 p-5 sm:p-6">
-          <div className="flex items-start gap-4">
-            {/* Avatar Section */}
-            <div className="flex-shrink-0">
-              <Link href={getProfileRoute(reply.authorId, userProfile.userType)} className="group/avatar">
-                <Avatar className="h-11 w-11 ring-0 shadow-md hover:shadow-lg transition-all duration-200 group-hover/avatar:scale-105">
-                  <AvatarImage src={userProfile.profilePicture} alt={userProfile.username} />
-                  <AvatarFallback className={`bg-gradient-to-br ${getAvatarColor(userProfile.username)} text-white font-semibold text-sm`}>
-                    {userProfile.username[0]}
-                  </AvatarFallback>
-                </Avatar>
+      {/* Threading Line */}
+      {depth > 0 && (
+        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#F1592A]/30 to-[#D14820]/30" />
+      )}
+      
+      <div className={`group relative ${depth > 0 ? 'ml-4 pl-3' : ''}`}>
+        <div className="flex items-start gap-2 py-2 px-3 rounded-lg hover:bg-[#F1592A]/[0.02] dark:hover:bg-[#F1592A]/[0.05] transition-colors duration-150">
+          {/* Avatar Section */}
+          <div className="flex-shrink-0">
+            <Link href={getProfileRoute(reply.authorId, userProfile.userType)} className="group/avatar">
+              <Avatar className="h-6 w-6 ring-0 transition-all duration-150 group-hover/avatar:scale-105">
+                <AvatarImage src={userProfile.profilePicture} alt={userProfile.username} />
+                <AvatarFallback className={`bg-gradient-to-br ${getAvatarColor(userProfile.username)} text-white font-semibold text-xs`}>
+                  {userProfile.username[0]}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          </div>
+          
+          {/* Content Section */}
+          <div className="flex-1 min-w-0">
+            {/* Header */}
+            <div className="flex items-center gap-2 mb-1">
+              <Link href={getProfileRoute(reply.authorId, userProfile.userType)} className="hover:text-[#F1592A] transition-colors duration-150">
+                <span className="font-medium text-sm text-[#232120] dark:text-[#E7E7E8] hover:text-[#F1592A] transition-colors duration-150 cursor-pointer">
+                  {userProfile.username}
+                </span>
               </Link>
+              <div className="flex items-center gap-1 text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
+                <span>
+                  {(() => {
+                    const now = new Date()
+                    const replyDate = new Date(reply.createdAt)
+                    const diffInMinutes = Math.floor((now.getTime() - replyDate.getTime()) / (1000 * 60))
+                    const diffInHours = Math.floor(diffInMinutes / 60)
+                    const diffInDays = Math.floor(diffInHours / 24)
+                    
+                    if (diffInDays > 0) return `${diffInDays}d`
+                    if (diffInHours > 0) return `${diffInHours}h`
+                    if (diffInMinutes > 0) return `${diffInMinutes}m`
+                    return 'now'
+                  })()}
+                </span>
+              </div>
             </div>
-            
-            {/* Content Section */}
-            <div className="flex-1 min-w-0">
-              {/* Header */}
-              <div className="mb-2">
-                <div className="flex items-center gap-3">
-                  <Link href={getProfileRoute(reply.authorId, userProfile.userType)} className="hover:text-[#F1592A] transition-colors duration-200">
-                    <span className="font-semibold text-[#232120] dark:text-[#E7E7E8] hover:text-[#F1592A] transition-colors duration-200 cursor-pointer">
-                      {userProfile.username}
-                    </span>
-                  </Link>
-                  <div className="flex items-center gap-2 text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
-                    <span>
-                      {reply.createdAt.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric'
-                      })}
-                    </span>
-                    <span>•</span>
-                    <span>
-                      {reply.createdAt.toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Reply Content */}
-              <div className="mb-3">
-                <div className="prose dark:prose-invert max-w-none">
-                  <ReactMarkdown 
-                    className="text-[#232120] dark:text-[#E7E7E8] text-base leading-relaxed"
-                    remarkPlugins={[remarkBreaks]}
-                  >
-                    {reply.content}
-                  </ReactMarkdown>
-                </div>
-
-                {reply.image && (
-                  <div className="mt-3">
-                    <div className="relative h-48 w-full max-w-md overflow-hidden rounded-2xl shadow-md">
-                      <Image 
-                        src={reply.image} 
-                        alt="Reply image" 
-                        fill
-                        className="object-cover transform group-hover:scale-[1.02] transition-transform duration-500"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setIsReplying(!isReplying)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium
-                    bg-[#F1592A]/8 text-[#F1592A] hover:bg-[#F1592A]/15 
-                    border-0 transition-all duration-300"
+            {/* Reply Content */}
+            <div className="mb-2">
+              <div className="prose dark:prose-invert max-w-none">
+                <ReactMarkdown 
+                  className="text-[#232120] dark:text-[#E7E7E8] text-sm leading-relaxed"
+                  remarkPlugins={[remarkBreaks]}
                 >
-                  <MessageSquare className="h-3.5 w-3.5" />
-                  Reply
-                </motion.button>
-                
-                {nestedReplies.length > 0 && (
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setShowReplies(!showReplies)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium
-                      bg-slate-500/8 text-slate-600 dark:text-slate-400 hover:bg-slate-500/15 
-                      border-0 transition-all duration-300"
-                  >
-                    {showReplies ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                    {nestedReplies.length} {nestedReplies.length === 1 ? 'reply' : 'replies'}
-                  </motion.button>
-                )}
-
-                {/* Delete Button - Show for reply author or admin */}
-                {(currentUserType === 'admin' || currentUser?.uid === reply.authorId) && (
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => onDeleteReply(reply.id)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium
-                      bg-red-500/8 text-red-500 hover:bg-red-500/15 
-                      border-0 transition-all duration-300"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete
-                  </motion.button>
-                )}
+                  {reply.content}
+                </ReactMarkdown>
               </div>
+
+              {reply.image && (
+                <div className="mt-2">
+                  <div className="relative h-24 w-full max-w-xs overflow-hidden rounded-md shadow-sm">
+                    <Image 
+                      src={reply.image} 
+                      alt="Reply image" 
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2 text-xs">
+              <button
+                onClick={() => setIsReplying(!isReplying)}
+                className="text-[#8E8F8E] dark:text-[#C3C3C3] hover:text-[#F1592A] transition-colors duration-150 font-medium"
+              >
+                Reply
+              </button>
+              
+              {nestedReplies.length > 0 && (
+                <button
+                  onClick={() => setShowReplies(!showReplies)}
+                  className="text-[#8E8F8E] dark:text-[#C3C3C3] hover:text-[#F1592A] transition-colors duration-150 font-medium"
+                >
+                  {showReplies ? 'Hide' : 'Show'} {nestedReplies.length} {nestedReplies.length === 1 ? 'reply' : 'replies'}
+                </button>
+              )}
+
+              {/* Delete Button - Show for reply author or admin */}
+              {(currentUserType === 'admin' || currentUser?.uid === reply.authorId) && (
+                <button
+                  onClick={() => onDeleteReply(reply.id)}
+                  className="text-red-500 hover:text-red-600 transition-colors duration-150 font-medium"
+                >
+                  Delete
+                </button>
+              )}
             </div>
           </div>
-
-          {/* Reply Input */}
-          {isReplying && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="mt-4 sm:mt-6"
-            >
-              <div className="relative overflow-hidden rounded-3xl backdrop-blur-sm 
-                bg-gradient-to-br from-[#F8F8F8]/60 via-[#F8F8F8]/40 to-[#F8F8F8]/20 
-                dark:from-[#1A1918]/60 dark:via-[#1A1918]/40 dark:to-[#1A1918]/20
-                border-0 shadow-sm">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#F1592A]/3 via-transparent to-[#D14820]/3 opacity-50" />
-                
-                <div className="relative z-10 p-4">
-                  <div className="flex items-end gap-3">
-                    <Textarea
-                      value={replyContent}
-                      onChange={(e) => setReplyContent(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Write your reply... (Press Enter to submit, Ctrl+Enter for new line)"
-                      className="flex-1 min-h-[48px] max-h-[200px] bg-white/50 dark:bg-black/50 border-0 
-                        backdrop-blur-sm focus:ring-2 focus:ring-[#F1592A]/30 focus:border-0
-                        text-[#232120] dark:text-[#E7E7E8] placeholder-[#8E8F8E] dark:placeholder-[#C3C3C3]
-                        rounded-3xl resize-none transition-all duration-300 py-3 px-4
-                        scrollbar-thin scrollbar-thumb-[#F1592A]/20 scrollbar-track-transparent"
-                      rows={1}
-                      style={{ 
-                        height: 'auto',
-                        minHeight: '48px'
-                      }}
-                      onInput={(e) => {
-                        const target = e.target as HTMLTextAreaElement;
-                        target.style.height = 'auto';
-                        target.style.height = Math.min(target.scrollHeight, 200) + 'px';
-                      }}
-                    />
-                    <Button 
-                      onClick={handleReply} 
-                      className="bg-gradient-to-r from-[#F1592A] to-[#D14820] text-white 
-                        hover:from-[#D14820] hover:to-[#F1592A] shadow-md hover:shadow-lg
-                        transition-all duration-300 rounded-3xl px-6 py-3 font-medium h-12 flex-shrink-0
-                        border-0"
-                    >
-                      Submit Reply
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
         </div>
+
+        {/* Reply Input */}
+        {isReplying && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.15 }}
+            className="mt-2 ml-8"
+          >
+            <div className="flex items-end gap-2 p-2 bg-[#F8F8F8]/50 dark:bg-[#1A1918]/50 rounded-lg border border-[#F1592A]/20">
+              <Textarea
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Write your reply..."
+                className="flex-1 min-h-[32px] max-h-[100px] bg-transparent border-0 
+                  focus:ring-0 focus:outline-none resize-none text-sm py-1 px-2"
+                rows={1}
+                style={{ 
+                  height: 'auto',
+                  minHeight: '32px'
+                }}
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = 'auto';
+                  target.style.height = Math.min(target.scrollHeight, 100) + 'px';
+                }}
+              />
+              <Button 
+                onClick={handleReply} 
+                size="sm"
+                className="bg-[#F1592A] hover:bg-[#D14820] text-white text-xs px-3 py-1 h-7 rounded-md"
+              >
+                Reply
+              </Button>
+            </div>
+          </motion.div>
+        )}
       </div>
 
       {/* Nested Replies */}
@@ -463,8 +455,8 @@ const ReplyComponent = ({ reply, allReplies, onReply, userProfiles, currentUser,
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="ml-6 mt-4 space-y-4 pl-4 border-l border-[#F1592A]/15"
+            transition={{ duration: 0.2 }}
+            className="mt-1"
           >
             {nestedReplies.map((nestedReply) => (
               <ReplyComponent
@@ -476,6 +468,7 @@ const ReplyComponent = ({ reply, allReplies, onReply, userProfiles, currentUser,
                 currentUser={currentUser}
                 currentUserType={currentUserType}
                 onDeleteReply={onDeleteReply}
+                depth={depth + 1}
               />
             ))}
           </motion.div>
@@ -816,108 +809,102 @@ export default function PostPage({ params }: { params: { postId: string } }) {
                           </Avatar>
                         </div>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-72 p-0 bg-[#E7E7E8]/95 dark:bg-[#232120]/95 backdrop-blur-xl 
+                      <DropdownMenuContent className="w-64 p-0 bg-[#E7E7E8]/95 dark:bg-[#232120]/95 backdrop-blur-xl 
                         border border-[#F1592A]/20 dark:border-[#F1592A]/20 shadow-2xl shadow-black/10 rounded-2xl" align="end">
                         {/* User Header Section */}
-                        <div className="p-6 bg-gradient-to-r from-[#F1592A]/5 to-[#D14820]/5 rounded-t-2xl">
-                          <div className="flex items-center gap-4">
-                            <Avatar className="h-16 w-16 ring-2 ring-[#F1592A]/30 shadow-lg">
+                        <div className="p-4 bg-[#1E1E24]">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-14 w-14 border-2 border-[#F1592A]">
                               <AvatarImage src={userProfile?.profilePicture} alt={userProfile?.username} />
-                              <AvatarFallback className="bg-gradient-to-br from-[#F1592A] to-[#D14820] text-white text-lg font-bold">
-                                {userProfile?.username?.[0] || '?'}
-                              </AvatarFallback>
+                              <AvatarFallback className="bg-[#2A2A30] text-[#F1592A]">{userProfile?.username?.[0] || '?'}</AvatarFallback>
                             </Avatar>
-                            <div className="flex-1">
-                              <p className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                                {userProfile?.username || "Username"}
-                              </p>
-                              <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
-                                {user.email}
-                              </p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                                <span className="text-xs text-slate-500 dark:text-slate-400">Online</span>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="text-base font-semibold">{userProfile?.username || "Username"}</p>
+                                {userType === 'admin' && (
+                                  <span className="bg-blue-500 text-xs px-1.5 py-0.5 rounded text-white">A</span>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-400">{user.email}</p>
+                              <div className="flex items-center mt-1">
+                                <div className="flex items-center gap-1">
+                                  <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+                                    <span className="text-xs">♥</span>
+                                  </div>
+                                  <span className="text-sm">1</span>
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                        
                         {/* Welcome Banner */}
-                        <div className="mx-4 my-4 bg-gradient-to-r from-[#F1592A]/10 to-[#D14820]/10 
-                          rounded-xl overflow-hidden border border-[#F1592A]/20">
-                          <div className="p-4 relative">
+                        <div className="mx-3 my-3 bg-[#2A2A30] rounded-lg overflow-hidden">
+                          <div className="p-3 relative">
                             <div className="flex justify-between items-center">
                               <div>
-                                <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                                  Welcome to Forum!
-                                </h3>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">
-                                  Join the discussion
-                                </p>
+                                <h3 className="text-sm font-medium">Welcome to Novellize!</h3>
+                                <p className="text-xs text-gray-400">Your home for web novels</p>
                               </div>
                               <Button 
-                                className="bg-gradient-to-r from-[#F1592A] to-[#D14820] text-white text-xs 
-                                  rounded-lg px-3 h-8 font-medium shadow-sm hover:shadow-md
-                                  hover:scale-105 transition-all duration-200"
-                                onClick={() => router.push('/forum')}
+                                className="bg-[#F1592A] hover:bg-[#E44D1F] text-white text-xs rounded-md px-3 h-7"
+                                onClick={() => router.push('/browse')}
                               >
                                 EXPLORE
                               </Button>
                             </div>
-                            
-                            {/* Background Icon */}
-                            <div className="absolute right-2 bottom-1 opacity-10">
-                              <MessageSquare className="h-10 w-10" />
+                            <div className="absolute right-2 bottom-0 opacity-20">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+                              </svg>
                             </div>
                           </div>
                         </div>
-                        
                         {/* Menu Items */}
-                        <div className="px-2 py-2 space-y-1">
-                          <DropdownMenuItem className="rounded-xl py-3 px-4 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 
-                            transition-colors duration-200 cursor-pointer group" onClick={() => router.push('/user_profile')}>
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center 
-                                group-hover:bg-blue-500/20 transition-colors duration-200">
-                                <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                              </div>
-                              <span className="font-medium text-slate-700 dark:text-slate-300">My Profile</span>
-                            </div>
+                        <div className="px-1 py-2">
+                          <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={() => router.push('/user_profile')}>
+                            <User className="mr-2 h-4 w-4" />
+                            <span>My Profile</span>
                           </DropdownMenuItem>
-                          
-                          <DropdownMenuItem className="rounded-xl py-3 px-4 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 
-                            transition-colors duration-200 cursor-pointer group" onClick={() => router.push('/browse')}>
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center 
-                                group-hover:bg-green-500/20 transition-colors duration-200">
-                                <BookOpen className="h-4 w-4 text-green-600 dark:text-green-400" />
-                              </div>
-                              <span className="font-medium text-slate-700 dark:text-slate-300">Browse All</span>
-                            </div>
+                          <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={() => router.push('/browse')}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="m21 21-6-6m6 6v-4.8m0 4.8h-4.8" />
+                              <path d="M3 16.2V21m0-4.8V21h4.8" />
+                              <path d="M21 7.8V3m0 4.8V3h-4.8" />
+                              <path d="M3 7.8V3m0 4.8V3h4.8" />
+                            </svg>
+                            <span>Browse All</span>
                           </DropdownMenuItem>
-                          
-                          <DropdownMenuItem className="rounded-xl py-3 px-4 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 
-                            transition-colors duration-200 cursor-pointer group">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center 
-                                group-hover:bg-purple-500/20 transition-colors duration-200">
-                                <Library className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                              </div>
-                              <span className="font-medium text-slate-700 dark:text-slate-300">Library</span>
-                            </div>
+                          <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5C2 7 4 5 6.5 5H18c2.2 0 4 1.8 4 4v8Z" />
+                              <polyline points="15,9 18,9 18,11" />
+                              <path d="M6.5 5C9 5 11 7 11 9.5V17a2 2 0 0 1-2 2v0" />
+                              <line x1="6" y1="10" x2="7" y2="10" />
+                            </svg>
+                            <span>Inbox</span>
                           </DropdownMenuItem>
-                          
-                          <DropdownMenuSeparator className="bg-slate-200/50 dark:bg-slate-700/50 my-2" />
-                          
-                          <DropdownMenuItem className="rounded-xl py-3 px-4 hover:bg-red-50 dark:hover:bg-red-900/20 
-                            transition-colors duration-200 cursor-pointer group" onClick={handleLogout}>
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center 
-                                group-hover:bg-red-500/20 transition-colors duration-200">
-                                <LogOut className="h-4 w-4 text-red-600 dark:text-red-400" />
-                              </div>
-                              <span className="font-medium text-red-700 dark:text-red-400">Sign Out</span>
-                            </div>
+                          <DropdownMenuSeparator className="bg-[#2A2A30]" />
+                          {userType === 'admin' && (
+                            <>
+                              <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={() => router.push('/admin')}>
+                                <ChevronsLeftRight className="mr-2 h-4 w-4" />
+                                <span>Admin Console</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator className="bg-[#2A2A30]" />
+                            </>
+                          )}
+                          {userType === 'author' && (
+                            <>
+                              <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={() => router.push('/admin')}>
+                                <ChevronsLeftRight className="mr-2 h-4 w-4" />
+                                <span>Author Console</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator className="bg-[#2A2A30]" />
+                            </>
+                          )}
+                          <DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-[#2A2A30] focus:text-white" onClick={handleLogout}>
+                            <LogOut className="mr-2 h-4 w-4" />
+                            <span>Sign Out</span>
                           </DropdownMenuItem>
                         </div>
                       </DropdownMenuContent>
@@ -1052,132 +1039,171 @@ export default function PostPage({ params }: { params: { postId: string } }) {
               </div>
             </div>
           ) : post ? (
-            <div className="space-y-8">
-              {/* Main Post Card */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="group relative overflow-hidden rounded-2xl backdrop-blur-xl 
-                  bg-gradient-to-r from-white/80 to-white/60 dark:from-[#232120]/80 dark:to-[#232120]/60
-                  hover:from-white/90 hover:to-white/70 dark:hover:from-[#232120]/90 dark:hover:to-[#232120]/70
-                  border border-[#F1592A]/20 shadow-2xl shadow-black/5 hover:shadow-3xl hover:shadow-[#F1592A]/10
-                  transition-all duration-500 ease-in-out"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-[#F1592A]/3 to-transparent opacity-0 
-                  group-hover:opacity-100 transition-opacity duration-500" />
-                
-                <div className="relative z-10 p-6 sm:p-8 md:p-10">
-                  <div className="flex flex-col md:flex-row gap-8 md:gap-10">
-                    {/* Author Section */}
-                    <div className="w-full md:w-52 flex-shrink-0 flex flex-row md:flex-col items-center md:items-center gap-4 md:gap-6 mb-6 md:mb-0 pb-6 md:pb-0 border-b md:border-b-0 border-[#F1592A]/10">
-                      <Link href={getProfileRoute(post.authorId, userProfiles[post.authorId]?.userType || 'reader')} className="group/avatar">
-                        <Avatar className="h-20 w-20 md:h-28 md:w-28 ring-4 ring-[#F1592A]/30 shadow-xl hover:ring-[#F1592A]/50 transition-all duration-300 group-hover/avatar:scale-105">
-                          <AvatarImage src={userProfiles[post.authorId]?.profilePicture || '/assets/default-avatar.png'} alt={post.author} />
-                          <AvatarFallback className="bg-gradient-to-br from-[#F1592A] to-[#D14820] text-white text-2xl font-bold">
-                            {post.author[0]}
-                          </AvatarFallback>
-                        </Avatar>
-                      </Link>
-                      <div className="text-left md:text-center">
-                        <Link href={getProfileRoute(post.authorId, userProfiles[post.authorId]?.userType || 'reader')} className="hover:text-[#F1592A] transition-colors duration-200">
-                          <h3 className="font-bold text-xl text-[#232120] dark:text-[#E7E7E8] mb-2 hover:text-[#F1592A] transition-colors duration-200 cursor-pointer">{post.author}</h3>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="group relative overflow-hidden rounded-2xl backdrop-blur-xl 
+                bg-gradient-to-r from-white/80 to-white/60 dark:from-[#232120]/80 dark:to-[#232120]/60
+                hover:from-white/90 hover:to-white/70 dark:hover:from-[#232120]/90 dark:hover:to-[#232120]/70
+                border border-[#F1592A]/20 shadow-2xl shadow-black/5 hover:shadow-3xl hover:shadow-[#F1592A]/10
+                transition-all duration-500 ease-in-out"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-[#F1592A]/3 to-transparent opacity-0 
+                group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="relative z-10 p-6 sm:p-8 md:p-10">
+                {/* Main Post Section */}
+                <div className="flex flex-col md:flex-row gap-8 md:gap-10 mb-8">
+                  {/* Author Section */}
+                  <div className="w-full md:w-48 flex-shrink-0 mb-6 md:mb-0">
+                    {/* Profile Card */}
+                    <div className="relative overflow-hidden rounded-2xl backdrop-blur-sm 
+                      bg-gradient-to-br from-slate-800/90 to-slate-900/90 dark:from-slate-800/90 dark:to-slate-900/90
+                      border border-slate-700/50 shadow-2xl shadow-black/20 p-4 text-center">
+                      
+                      {/* Background Pattern */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-[#F1592A]/5 to-[#D14820]/5 opacity-50" />
+                      
+                      {/* Profile Content */}
+                      <div className="relative z-10">
+                        <Link href={getProfileRoute(post.authorId, userProfiles[post.authorId]?.userType || 'reader')} className="group/avatar">
+                          <Avatar className="h-16 w-16 mx-auto mb-3 ring-4 ring-slate-600/50 shadow-xl hover:ring-[#F1592A]/50 transition-all duration-300 group-hover/avatar:scale-105">
+                            <AvatarImage src={userProfiles[post.authorId]?.profilePicture || '/assets/default-avatar.png'} alt={post.author} />
+                            <AvatarFallback className="bg-gradient-to-br from-[#F1592A] to-[#D14820] text-white text-lg font-bold">
+                              {post.author[0]}
+                            </AvatarFallback>
+                          </Avatar>
                         </Link>
-                        <p className="text-sm text-[#8E8F8E] dark:text-[#C3C3C3] mb-1">
-                          {new Date(post.createdAt).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </p>
-                        <p className="text-sm text-[#8E8F8E] dark:text-[#C3C3C3] mb-3">
-                          {new Date(post.createdAt).toLocaleTimeString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </p>
-                        <Badge variant="outline" 
-                          className="bg-gradient-to-r from-[#F1592A]/10 to-[#D14820]/10 text-[#F1592A] 
-                          border-[#F1592A]/30 font-medium px-3 py-1">
-                          {post.section}
-                        </Badge>
+                        
+                        <Link href={getProfileRoute(post.authorId, userProfiles[post.authorId]?.userType || 'reader')} className="hover:text-[#F1592A] transition-colors duration-200">
+                          <h3 className="font-bold text-base text-white mb-2 hover:text-[#F1592A] transition-colors duration-200 cursor-pointer">
+                            {post.author}
+                          </h3>
+                        </Link>
+                        
+                        {/* User Role Badge */}
+                        {(() => {
+                          const authorProfile = userProfiles[post.authorId]
+                          if (!authorProfile) return null
+                          
+                          const userRole = authorProfile.userType || 'user'
+                          const roleBadge = getRoleBadge(userRole)
+                          const RoleIcon = roleBadge.icon
+                          
+                          return (
+                            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-all duration-300 ${roleBadge.className}`}>
+                              <RoleIcon className="h-3 w-3" />
+                              <span>{roleBadge.text}</span>
+                            </div>
+                          )
+                        })()}
                       </div>
                     </div>
-
-                    {/* Content Section */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
-                        <h1 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent 
-                          bg-gradient-to-r from-[#F1592A] to-[#D14820] leading-tight">
-                          {post.title}
-                        </h1>
-                        <Button
-                          variant="outline"
-                          className="w-full sm:w-auto bg-gradient-to-r from-[#F1592A]/10 to-[#D14820]/10 
-                            text-[#F1592A] hover:from-[#F1592A]/20 hover:to-[#D14820]/20 
-                            border-[#F1592A]/30 hover:border-[#F1592A]/50 shadow-sm hover:shadow-md
-                            transition-all duration-300 rounded-xl px-6 py-3 font-medium"
-                          onClick={handleBackToForums}
-                        >
-                          <ChevronLeft className="mr-2 h-4 w-4" />
-                          Back to Forums
-                        </Button>
+                    
+                    {/* Post Details - Simple Row Format */}
+                    <div className="mt-4 space-y-2 text-xs text-center">
+                      <div className="flex items-center justify-center gap-3">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 bg-[#F1592A] rounded-full"></div>
+                          <span className="text-[#F1592A] font-medium capitalize">{post.section}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <MessageSquare className="w-3 h-3 text-purple-400" />
+                          <span className="text-purple-400 font-medium">{allReplies.length}</span>
+                        </div>
                       </div>
-
-                      <div className="prose dark:prose-invert max-w-none">
-                        <ReactMarkdown className="text-[#232120] dark:text-[#E7E7E8] text-lg leading-relaxed">
-                          {post.content}
-                        </ReactMarkdown>
-                        {post.image && (
-                          <div className="mt-8">
-                            <div className="relative overflow-hidden rounded-xl shadow-2xl">
-                              <Image 
-                                src={post.image} 
-                                alt="Post image" 
-                                width={600} 
-                                height={400} 
-                                className="w-full max-w-[500px] h-auto mx-auto transform hover:scale-105 transition-transform duration-500"
-                              />
-                            </div>
-                          </div>
-                        )}
+                      
+                      <div className="flex items-center justify-center gap-3 text-[#8E8F8E] dark:text-[#C3C3C3]">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                          <span>
+                            {new Date(post.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                          <span>
+                            {new Date(post.createdAt).toLocaleTimeString('en-US', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
 
-              {/* Replies Section */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="relative overflow-hidden rounded-2xl backdrop-blur-xl 
-                  bg-gradient-to-r from-white/80 to-white/60 dark:from-[#232120]/80 dark:to-[#232120]/60
-                  border border-[#F1592A]/20 shadow-2xl shadow-black/5"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-[#F1592A]/2 to-transparent opacity-50" />
-                
-                <div className="relative z-10 p-6 sm:p-8">
-                  {/* Header */}
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F1592A] to-[#D14820] 
-                        flex items-center justify-center shadow-lg">
-                        <MessageSquare className="w-5 h-5 text-white" />
-                      </div>
-                      <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent 
-                        bg-gradient-to-r from-[#232120] to-[#3E3F3E] dark:from-[#E7E7E8] dark:to-[#C3C3C3]">
-                        Discussion ({allReplies.filter(r => !r.parentId).length})
-                      </h2>
+                  {/* Content Section */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
+                      <h1 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent 
+                        bg-gradient-to-r from-[#F1592A] to-[#D14820] leading-tight">
+                        {post.title}
+                      </h1>
+                      <Button
+                        variant="outline"
+                        className="w-full sm:w-auto bg-gradient-to-r from-[#F1592A]/10 to-[#D14820]/10 
+                          text-[#F1592A] hover:from-[#F1592A]/20 hover:to-[#D14820]/20 
+                          border-[#F1592A]/30 hover:border-[#F1592A]/50 shadow-sm hover:shadow-md
+                          transition-all duration-300 rounded-xl px-6 py-3 font-medium"
+                        onClick={handleBackToForums}
+                      >
+                        <ChevronLeft className="mr-2 h-4 w-4" />
+                        Back to Forums
+                      </Button>
                     </div>
+
+                    {/* Content with conditional layout based on image presence */}
+                    <div className={`flex ${post.image ? 'flex-col lg:flex-row gap-8' : 'flex-col'}`}>
+                      {/* Text Content */}
+                      <div className={`prose dark:prose-invert max-w-none ${post.image ? 'lg:w-[60%]' : 'w-full'}`}>
+                        <ReactMarkdown className="text-[#232120] dark:text-[#E7E7E8] text-lg leading-relaxed">
+                          {post.content}
+                        </ReactMarkdown>
+                      </div>
+                      
+                      {/* Image Section */}
+                      {post.image && (
+                        <div className="lg:w-[40%] flex-shrink-0">
+                          <div className="relative overflow-hidden rounded-xl shadow-2xl h-64 lg:h-80">
+                            <Image 
+                              src={post.image} 
+                              alt="Post image" 
+                              width={600} 
+                              height={400} 
+                              className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Discussion Divider */}
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#F1592A]/30 to-transparent"></div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#F1592A] to-[#D14820] 
+                      flex items-center justify-center shadow-lg">
+                      <MessageSquare className="w-4 h-4 text-white" />
+                    </div>
+                    <h2 className="text-xl font-bold bg-clip-text text-transparent 
+                      bg-gradient-to-r from-[#232120] to-[#3E3F3E] dark:from-[#E7E7E8] dark:to-[#C3C3C3]">
+                      Discussion ({allReplies.filter(r => !r.parentId).length})
+                    </h2>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" 
-                          className="w-full sm:w-auto bg-gradient-to-r from-[#F1592A]/10 to-[#D14820]/10 
+                        <Button variant="outline" size="sm"
+                          className="bg-gradient-to-r from-[#F1592A]/10 to-[#D14820]/10 
                             text-[#F1592A] border-[#F1592A]/30 hover:from-[#F1592A]/20 hover:to-[#D14820]/20
-                            hover:border-[#F1592A]/50 transition-all duration-300 rounded-xl px-4 py-2">
-                          Sort by: {sortBy} <ChevronDown className="ml-2 h-4 w-4" />
+                            hover:border-[#F1592A]/50 transition-all duration-300 rounded-lg px-3 py-1 text-xs">
+                          Sort: {sortBy} <ChevronDown className="ml-1 h-3 w-3" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="bg-[#E7E7E8]/95 dark:bg-[#232120]/95 backdrop-blur-xl 
@@ -1193,90 +1219,92 @@ export default function PostPage({ params }: { params: { postId: string } }) {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-
-                  {/* Reply Input */}
-                  {user && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: 0.3 }}
-                      className="relative overflow-hidden rounded-xl backdrop-blur-sm 
-                        bg-gradient-to-r from-[#F8F8F8]/80 to-[#F8F8F8]/60 dark:from-[#1A1918]/80 dark:to-[#1A1918]/60
-                        border border-[#F1592A]/20 shadow-lg mb-8"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#F1592A]/5 to-transparent opacity-50" />
-                      
-                      <div className="relative z-10 p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                          <Avatar className="h-10 w-10 ring-2 ring-[#F1592A]/30">
-                            <AvatarImage src={userProfile?.profilePicture} alt={userProfile?.username} />
-                            <AvatarFallback className="bg-gradient-to-br from-[#F1592A] to-[#D14820] text-white font-semibold">
-                              {userProfile?.username?.[0] || '?'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-sm font-medium text-[#232120] dark:text-[#E7E7E8]">
-                            Reply as {userProfile?.username}
-                          </span>
-                        </div>
-                        <div className="flex items-end gap-3">
-                          <Textarea
-                            value={replyContent}
-                            onChange={(e) => setReplyContent(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder="Write your reply... (Press Enter to submit, Ctrl+Enter for new line)"
-                            className="flex-1 min-h-[48px] max-h-[200px] bg-white/60 dark:bg-black/60 border border-[#F1592A]/30 
-                              backdrop-blur-sm focus:ring-2 focus:ring-[#F1592A]/50 focus:border-[#F1592A]/50
-                              text-[#232120] dark:text-[#E7E7E8] placeholder-[#8E8F8E] dark:placeholder-[#C3C3C3]
-                              rounded-2xl resize-none transition-all duration-300 py-3 px-4
-                              scrollbar-thin scrollbar-thumb-[#F1592A]/20 scrollbar-track-transparent"
-                            rows={1}
-                            style={{ 
-                              height: 'auto',
-                              minHeight: '48px'
-                            }}
-                            onInput={(e) => {
-                              const target = e.target as HTMLTextAreaElement;
-                              target.style.height = 'auto';
-                              target.style.height = Math.min(target.scrollHeight, 200) + 'px';
-                            }}
-                          />
-                          <Button 
-                            onClick={() => handleReply(null, replyContent)} 
-                            className="bg-gradient-to-r from-[#F1592A] to-[#D14820] text-white 
-                              hover:from-[#D14820] hover:to-[#F1592A] shadow-lg hover:shadow-xl
-                              transition-all duration-300 rounded-2xl px-6 py-3 font-medium h-12 flex-shrink-0"
-                          >
-                            Submit Reply
-                          </Button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* Replies List */}
-                  <div className="space-y-6">
-                    {filterReplies(sortReplies(allReplies.filter(r => !r.parentId))).map((reply, index) => (
-                      <motion.div
-                        key={reply.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.1 }}
-                      >
-                        <ReplyComponent
-                          reply={reply}
-                          allReplies={allReplies}
-                          onReply={handleReply}
-                          userProfiles={userProfiles}
-                          currentUser={user}
-                          currentUserType={userType}
-                          onDeleteReply={(replyId) => setDeleteConfirmReply(replyId)}
-                        />
-                      </motion.div>
-                    ))}
-                  </div>
+                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#F1592A]/30 to-transparent"></div>
                 </div>
-              </motion.div>
-            </div>
+
+                {/* Reply Input */}
+                {user && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.3 }}
+                    className="relative overflow-hidden rounded-xl backdrop-blur-sm 
+                      bg-gradient-to-r from-[#F8F8F8]/60 to-[#F8F8F8]/40 dark:from-[#1A1918]/60 dark:to-[#1A1918]/40
+                      border border-[#F1592A]/20 shadow-sm mb-6"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#F1592A]/3 to-transparent opacity-50" />
+                    
+                    <div className="relative z-10 p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Avatar className="h-8 w-8 ring-2 ring-[#F1592A]/30">
+                          <AvatarImage src={userProfile?.profilePicture} alt={userProfile?.username} />
+                          <AvatarFallback className="bg-gradient-to-br from-[#F1592A] to-[#D14820] text-white font-semibold text-xs">
+                            {userProfile?.username?.[0] || '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-xs font-medium text-[#232120] dark:text-[#E7E7E8]">
+                          Reply as {userProfile?.username}
+                        </span>
+                      </div>
+                      <div className="flex items-end gap-3">
+                        <Textarea
+                          value={replyContent}
+                          onChange={(e) => setReplyContent(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          placeholder="Write your reply... (Press Enter to submit)"
+                          className="flex-1 min-h-[40px] max-h-[120px] bg-white/60 dark:bg-black/60 border border-[#F1592A]/30 
+                            backdrop-blur-sm focus:ring-2 focus:ring-[#F1592A]/50 focus:border-[#F1592A]/50
+                            text-[#232120] dark:text-[#E7E7E8] placeholder-[#8E8F8E] dark:placeholder-[#C3C3C3]
+                            rounded-xl resize-none transition-all duration-300 py-2 px-3 text-sm
+                            scrollbar-thin scrollbar-thumb-[#F1592A]/20 scrollbar-track-transparent"
+                          rows={1}
+                          style={{ 
+                            height: 'auto',
+                            minHeight: '40px'
+                          }}
+                          onInput={(e) => {
+                            const target = e.target as HTMLTextAreaElement;
+                            target.style.height = 'auto';
+                            target.style.height = Math.min(target.scrollHeight, 120) + 'px';
+                          }}
+                        />
+                        <Button 
+                          onClick={() => handleReply(null, replyContent)} 
+                          size="sm"
+                          className="bg-gradient-to-r from-[#F1592A] to-[#D14820] text-white 
+                            hover:from-[#D14820] hover:to-[#F1592A] shadow-md hover:shadow-lg
+                            transition-all duration-300 rounded-xl px-4 py-2 font-medium h-10 flex-shrink-0"
+                        >
+                          Reply
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Replies List */}
+                <div className="space-y-2">
+                  {filterReplies(sortReplies(allReplies.filter(r => !r.parentId))).map((reply, index) => (
+                    <motion.div
+                      key={reply.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                    >
+                      <ReplyComponent
+                        reply={reply}
+                        allReplies={allReplies}
+                        onReply={handleReply}
+                        userProfiles={userProfiles}
+                        currentUser={user}
+                        currentUserType={userType}
+                        onDeleteReply={(replyId) => setDeleteConfirmReply(replyId)}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
           ) : (
             <div className="text-center text-[#232120] dark:text-[#E7E7E8]">Post not found</div>
           )}
