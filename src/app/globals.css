@@ -82,7 +82,8 @@ body.dark .text-gray-600 {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-serif;
+    font-family: var(--font-merriweather), Merriweather, serif;
   }
 }
 
