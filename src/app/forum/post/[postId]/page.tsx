@@ -1337,7 +1337,7 @@ export default function PostPage({ params }: { params: { postId: string } }) {
                   <span>All rights reserved</span>
                   <span>•</span>
                   <span className="flex items-center gap-1">
-                    Made with <span className="text-red-500">♥</span> for readers
+                    Made with <span className="text-red-500">♥</span> for fiction lovers
                   </span>
                 </div>
               </div>
