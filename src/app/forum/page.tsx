@@ -486,7 +486,7 @@ const handleDeletePost = async (postId: string) => {
 const renderPosts = (section: string) => {
   const sectionPosts = posts.filter(post => post.section === section)
   return (
-    <div className="space-y-6 p-2 sm:p-4">
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4">
       {sectionPosts.map((post) => (
         <motion.div
           key={post.id}
@@ -494,62 +494,152 @@ const renderPosts = (section: string) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
           whileHover={{ 
-            y: -4, 
-            scale: 1.02,
+            y: -2, 
+            scale: 1.01,
             transition: { duration: 0.2 } 
           }}
-          className="relative ml-0 sm:ml-12 lg:ml-10 border-t border-b border-[#F1592A]/20 py-3
-            hover:border hover:border-[#F1592A]/50 hover:rounded-xl hover:px-4 hover:shadow-2xl hover:shadow-[#F1592A]/30 
+          className="relative border-t border-b border-[#F1592A]/20 py-3 sm:py-4
+            hover:border hover:border-[#F1592A]/50 hover:rounded-xl hover:px-3 sm:hover:px-4 hover:shadow-xl hover:shadow-[#F1592A]/20 
             transition-all duration-300 hover:bg-white/5 hover:dark:bg-slate-800/5 hover:backdrop-blur-sm group"
         >
           <div className="group relative overflow-visible">
             <div className="relative z-10">
-              {/* Main Content Area */}
-              <div className="flex flex-col lg:flex-row h-[101px]">
-                {/* Left Content Area */}
-                <div className="flex-1 relative">
-                  {/* Mobile User Card - Top of post */}
-                  <div className="block sm:hidden mb-3">
-                    <div className="bg-gradient-to-r from-slate-900/40 via-slate-800/30 to-slate-900/40 
-                      dark:from-slate-800/40 dark:via-slate-700/30 dark:to-slate-800/40
-                      backdrop-blur-xl rounded-xl p-2 shadow-lg
-                      border border-white/10 dark:border-slate-600/20">
-                      <Link href={`/author/${post.authorId}`} className="block group/avatar">
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8 ring-2 ring-white/30 dark:ring-slate-300/30 shadow-lg 
-                            hover:ring-[#F1592A]/50 transition-all duration-200 group-hover/avatar:scale-105">
-                            <AvatarImage src={authorProfiles[post.authorId]?.profilePicture || '/assets/default-avatar.png'} />
-                            <AvatarFallback className="bg-gradient-to-br from-[#F1592A]/80 to-[#D14820]/80 text-white font-bold text-xs">
-                              {post.author[0]}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-white dark:text-slate-100 font-semibold text-xs leading-tight 
-                                hover:text-[#F1592A] transition-colors duration-200">{post.author}</span>
-                              {/* User Role Badge */}
-                              {(() => {
-                                const authorProfile = authorProfiles[post.authorId]
-                                if (!authorProfile) return null
-                                
-                                const userRole = authorProfile.userType || 'user'
-                                const roleBadge = getRoleBadge(userRole)
-                                const RoleIcon = roleBadge.icon
-                                
-                                return (
-                                  <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium transition-all duration-300 ${roleBadge.className}`}>
-                                    <RoleIcon className="h-2.5 w-2.5" />
-                                    <span>{roleBadge.text}</span>
-                                  </div>
-                                )
-                              })()}
-                            </div>
+              {/* Mobile Layout */}
+              <div className="block sm:hidden">
+                {/* Mobile User Card - Top of post */}
+                <div className="mb-3">
+                  <div className="bg-gradient-to-r from-slate-900/40 via-slate-800/30 to-slate-900/40 
+                    dark:from-slate-800/40 dark:via-slate-700/30 dark:to-slate-800/40
+                    backdrop-blur-xl rounded-xl p-2 shadow-lg
+                    border border-white/10 dark:border-slate-600/20">
+                    <Link href={`/author/${post.authorId}`} className="block group/avatar">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8 ring-2 ring-white/30 dark:ring-slate-300/30 shadow-lg 
+                          hover:ring-[#F1592A]/50 transition-all duration-200 group-hover/avatar:scale-105">
+                          <AvatarImage src={authorProfiles[post.authorId]?.profilePicture || '/assets/default-avatar.png'} />
+                          <AvatarFallback className="bg-gradient-to-br from-[#F1592A]/80 to-[#D14820]/80 text-white font-bold text-xs">
+                            {post.author[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-white dark:text-slate-100 font-semibold text-xs leading-tight 
+                              hover:text-[#F1592A] transition-colors duration-200">{post.author}</span>
+                            {/* User Role Badge */}
+                            {(() => {
+                              const authorProfile = authorProfiles[post.authorId]
+                              if (!authorProfile) return null
+                              
+                              const userRole = authorProfile.userType || 'user'
+                              const roleBadge = getRoleBadge(userRole)
+                              const RoleIcon = roleBadge.icon
+                              
+                              return (
+                                <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium transition-all duration-300 ${roleBadge.className}`}>
+                                  <RoleIcon className="h-2.5 w-2.5" />
+                                  <span>{roleBadge.text}</span>
+                                </div>
+                              )
+                            })()}
                           </div>
                         </div>
+                      </div>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Mobile Content */}
+                <div className="space-y-3">
+                  <Link href={`/forum/post/${post.id}?tab=${section}&page=1`}>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                      <h3 className="text-lg sm:text-xl font-bold bg-clip-text text-transparent 
+                        bg-gradient-to-r from-[#F1592A] to-[#D14820]
+                        group-hover:from-blue-500 group-hover:to-blue-600
+                        transition-all duration-500 leading-tight line-clamp-2">
+                        {post.title}
+                      </h3>
+                      <Badge variant="outline" 
+                        className="bg-gradient-to-r from-[#F1592A]/15 to-[#D14820]/15 text-[#F1592A] 
+                        border-[#F1592A]/40 group-hover:bg-gradient-to-r group-hover:from-[#F1592A]/25 
+                        group-hover:to-[#D14820]/25 transition-all duration-500 font-medium backdrop-blur-sm text-xs w-fit">
+                        {post.section}
+                      </Badge>
+                    </div>
+                  </Link>
+
+                  <Link href={`/forum/post/${post.id}?tab=${section}&page=1`}>
+                    <p className="text-[#232120] dark:text-[#E7E7E8] text-sm leading-snug line-clamp-3 mb-3">
+                      {post.content.length > 150 ? `${post.content.substring(0, 150)}... ` : post.content}
+                      {post.content.length > 150 && (
+                        <span className="text-[#F1592A] hover:text-[#D14820] font-medium transition-colors duration-200">
+                          read more
+                        </span>
+                      )}
+                    </p>
+                  </Link>
+
+                  {/* Mobile Image */}
+                  {post.image && (
+                    <div className="w-full h-32 relative bg-gradient-to-br from-[#F1592A] to-[#D14820] 
+                      rounded-xl overflow-hidden mb-3">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10" />
+                      <Image 
+                        src={post.image} 
+                        alt="Post image" 
+                        fill
+                        className="object-cover transform group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  )}
+
+                  {/* Mobile Footer */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                    <div className="flex items-center gap-3">
+                      <Link href={`/forum/post/${post.id}?tab=${section}&page=1`} className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400 hover:text-[#F1592A] transition-colors duration-300">
+                        <MessageSquare className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                        <span className="font-medium">{post.repliesCount} {post.repliesCount === 1 ? 'reply' : 'replies'}</span>
                       </Link>
+                      <div className="text-gray-500 dark:text-gray-400 text-xs flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        <span>{new Date(post.createdAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric'
+                        })} • {new Date(post.createdAt).toLocaleTimeString('en-US', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Mobile Action Buttons */}
+                    <div className="flex items-center gap-2">
+                      {user?.uid === post.authorId && (
+                        <button
+                          onClick={() => setEditingPost(post.id)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-md transition-colors duration-300 flex items-center gap-1 text-xs"
+                        >
+                          <Edit className="h-3 w-3" />
+                          <span className="font-medium">Edit</span>
+                        </button>
+                      )}
+                      {(userType === 'admin' || user?.uid === post.authorId) && (
+                        <button
+                          onClick={() => setDeleteConfirmPost(post.id)}
+                          className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-md transition-colors duration-300 flex items-center gap-1 text-xs"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          <span className="font-medium">Delete</span>
+                        </button>
+                      )}
                     </div>
                   </div>
+                </div>
+              </div>
 
+              {/* Desktop Layout */}
+              <div className="hidden sm:flex flex-col lg:flex-row h-[101px]">
+                {/* Left Content Area */}
+                <div className="flex-1 relative">
                   {/* Desktop Floating User Details Box - Left side, vertically centered, smaller */}
                   <div className="hidden sm:block absolute top-1/2 -left-4 sm:-left-12 transform -translate-y-1/2 z-20">
                     <div className="bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 
@@ -685,8 +775,6 @@ const renderPosts = (section: string) => {
                   </div>
                 )}
               </div>
-
-
             </div>
           </div>
         </motion.div>
