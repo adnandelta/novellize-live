@@ -148,9 +148,28 @@ export default function HeroCarousel({ loading = false }: HeroCarouselProps) {
           <div className="absolute -left-16 top-0 w-20 h-full z-30 pointer-events-none" />
           <div className="absolute -right-16 top-0 w-20 h-full z-30 pointer-events-none" />
           
-          <div className="flex gap-4 h-[300px] md:h-[350px] mx-8">
-                    {/* Main Carousel */}
-          <div className="flex-1 relative rounded-2xl overflow-hidden shadow-2xl">
+          <div className="flex gap-4 h-[300px] md:h-[350px] mx-8 relative">
+            {/* Main Carousel */}
+            <div className="flex-1 relative rounded-2xl shadow-2xl">
+              {/* Navigation Arrows - Centered on card edge (left) */}
+              {cards.length > 1 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={prevSlide}
+                  className="absolute left-0 -translate-x-1/2 inset-y-0 my-auto z-30 w-10 h-10 bg-white/30 border border-white/80 backdrop-blur-md shadow-lg hover:bg-white/60 text-white flex items-center justify-center rounded-full transition-all duration-300"
+                  style={{
+                    boxShadow: '0 4px 24px 0 rgba(255,255,255,0.10)',
+                    borderWidth: 2,
+                    borderStyle: 'solid',
+                    borderColor: 'rgba(255,255,255,0.8)',
+                    background: 'rgba(255,255,255,0.18)',
+                    backdropFilter: 'blur(8px)',
+                  }}
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+              )}
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentSlide}
@@ -190,12 +209,22 @@ export default function HeroCarousel({ loading = false }: HeroCarouselProps) {
                         initial={{ opacity: 0, y: 50, x: 30 }}
                         animate={{ opacity: 1, y: 0, x: 0 }}
                         transition={{ delay: 0.1, duration: 0.6, ease: "easeOut" }}
-                        className="flex flex-wrap gap-2 mb-1"
+                        className="flex flex-row mb-1 overflow-hidden"
                       >
                         {cards[currentSlide].tags.map((tag, index) => (
                           <span
                             key={index}
-                            className="bg-transparent text-white text-xs font-medium px-2 py-1 border border-white uppercase tracking-wide"
+                            className={
+                              `bg-transparent text-white text-xs font-medium px-3 py-1 uppercase tracking-wide border-t border-b border-r border-white ${
+                                index === 0
+                                  ? 'border-l border-white rounded-l'
+                                  : 'border-l border-white'
+                              } ${
+                                index === ((cards[currentSlide].tags?.length ?? 0) - 1)
+                                  ? 'rounded-r'
+                                  : ''
+                              }`
+                            }
                           >
                             {tag}
                           </span>
@@ -250,40 +279,20 @@ export default function HeroCarousel({ loading = false }: HeroCarouselProps) {
 
             {/* Slide Counter - Bottom Right */}
             {cards.length > 1 && (
-              <div className="absolute bottom-3 right-3 z-20 bg-black/20 backdrop-blur-sm rounded-full px-2 py-1">
-                <span className="text-white text-xs font-medium">
-                  {currentSlide + 1} / {cards.length}
+              <div className="absolute bottom-3 right-3 z-20 bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 flex items-center min-w-[32px] h-6">
+                <span className="text-white text-xs font-bold mr-0.5">
+                  {currentSlide + 1}
+                </span>
+                <span className="text-white/60 text-xs font-semibold">
+                  / {cards.length}
                 </span>
               </div>
             )}
           </div>
 
-          {/* Navigation Arrows - Outside the carousel */}
-          {cards.length > 1 && (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={prevSlide}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-30 bg-white/95 hover:bg-white text-gray-800 border-2 border-white rounded-full w-12 h-12 shadow-xl backdrop-blur-sm transition-all duration-300 hover:scale-110"
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={nextSlide}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-30 bg-white/95 hover:bg-white text-gray-800 border-2 border-white rounded-full w-12 h-12 shadow-xl backdrop-blur-sm transition-all duration-300 hover:scale-110"
-              >
-                <ChevronRight className="h-6 w-6" />
-              </Button>
-            </>
-          )}
-
           {/* Side Preview Cards - Vertical Strips */}
           {cards.length > 1 && (
-            <div className="hidden md:flex gap-1 w-16 lg:w-20">
+            <div className="hidden md:flex gap-1 w-16 lg:w-20 relative mr-4">
               {/* Show next 2 cards as tall vertical strips */}
               {getNextSlides().map((item, index) => {
                 const { index: previewIndex, card } = item;
@@ -362,6 +371,23 @@ export default function HeroCarousel({ loading = false }: HeroCarouselProps) {
                   </motion.div>
                 );
               })}
+              {/* Right arrow at the end of preview cards */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={nextSlide}
+                className="absolute right-0 translate-x-1/2 inset-y-0 my-auto z-30 w-10 h-10 bg-white/30 border border-white/80 backdrop-blur-md shadow-lg hover:bg-white/60 text-white flex items-center justify-center rounded-full transition-all duration-300"
+                style={{
+                  boxShadow: '0 4px 24px 0 rgba(255,255,255,0.10)',
+                  borderWidth: 2,
+                  borderStyle: 'solid',
+                  borderColor: 'rgba(255,255,255,0.8)',
+                  background: 'rgba(255,255,255,0.18)',
+                  backdropFilter: 'blur(8px)',
+                }}
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
             </div>
           )}
         </div>
