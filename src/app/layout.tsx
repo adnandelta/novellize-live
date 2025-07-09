@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { Merriweather } from "next/font/google";
+import { Ubuntu } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from './authcontext'
 import { ThemeProvider } from 'next-themes'
 import { Analytics } from '@vercel/analytics/react'
 
-const merriweather = Merriweather({
+const ubuntu = Ubuntu({
   subsets: ["latin"],
-  weight: ["300", "400", "700", "900"],
-  variable: "--font-merriweather",
+  weight: ["300", "400", "500", "700"],
+  variable: "--font-ubuntu",
 });
 
 export const metadata: Metadata = {
@@ -26,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${merriweather.variable} antialiased`}>
+      <body className={`${ubuntu.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

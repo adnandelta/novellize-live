@@ -13,8 +13,8 @@ const config: Config = {
         foreground: "var(--foreground)",
       },
       fontFamily: {
-        sans: ["var(--font-merriweather)", "Merriweather", "serif"],
-        serif: ["var(--font-merriweather)", "Merriweather", "serif"],
+        sans: ["var(--font-ubuntu)", "Ubuntu", "sans-serif"],
+        serif: ["var(--font-ubuntu)", "Ubuntu", "sans-serif"],
       },
     },
   },
