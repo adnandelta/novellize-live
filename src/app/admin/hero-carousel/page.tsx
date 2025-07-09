@@ -11,12 +11,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { toast, Toaster } from 'sonner'
-import { ArrowLeft, Save, Plus, X, Edit, Trash2, Eye, EyeOff, GripVertical, Upload, ImageIcon } from 'lucide-react'
+import { ArrowLeft, Save, Plus, X, Edit, Trash2, Eye, EyeOff, GripVertical, Upload, ImageIcon, Monitor } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { storage } from '@/lib/firebaseConfig'
+import { genres } from '@/app/genreColors'
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface HeroCard {
   id: string
@@ -28,6 +31,9 @@ interface HeroCard {
   isActive: boolean
   order: number
   tags?: string[]
+  isWritingChallenge: boolean
+  byWho: string
+  genres: string[]
 }
 
 export default function HeroCarouselManagement() {
@@ -38,6 +44,8 @@ export default function HeroCarouselManagement() {
   const [isAddingNew, setIsAddingNew] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [originalCards, setOriginalCards] = useState<HeroCard[]>([])
   const { user } = useAuth()
   const router = useRouter()
 
@@ -49,7 +57,10 @@ export default function HeroCarouselManagement() {
     link: '',
     buttonText: 'Learn More',
     isActive: true,
-    tags: []
+    tags: [],
+    isWritingChallenge: false,
+    byWho: '',
+    genres: []
   })
   const [tagInput, setTagInput] = useState('')
 
@@ -84,6 +95,7 @@ export default function HeroCarouselManagement() {
           // Sort by order
           const sortedCards = data.cards.sort((a: HeroCard, b: HeroCard) => (a.order || 0) - (b.order || 0))
           setCards(sortedCards)
+          setOriginalCards(JSON.parse(JSON.stringify(sortedCards))) // Deep copy for comparison
         }
       }
     } catch (error) {
@@ -93,6 +105,25 @@ export default function HeroCarouselManagement() {
       setLoading(false)
     }
   }
+
+  // Check for unsaved changes
+  useEffect(() => {
+    const hasChanges = JSON.stringify(cards) !== JSON.stringify(originalCards)
+    setHasUnsavedChanges(hasChanges)
+  }, [cards, originalCards])
+
+  // Warn user before leaving with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [hasUnsavedChanges])
 
   const saveCards = async () => {
     try {
@@ -105,6 +136,7 @@ export default function HeroCarouselManagement() {
         updatedAt: new Date()
       }, { merge: true })
       
+      setOriginalCards(JSON.parse(JSON.stringify(cards))) // Update original after save
       toast.success('Hero carousel saved successfully')
     } catch (error) {
       console.error('Error saving hero cards:', error)
@@ -124,7 +156,10 @@ export default function HeroCarouselManagement() {
       buttonText: formData.buttonText || 'Learn More',
       isActive: formData.isActive ?? true,
       order: cards.length,
-      tags: formData.tags || []
+      tags: formData.tags || [],
+      isWritingChallenge: formData.isWritingChallenge ?? false,
+      byWho: formData.byWho || '',
+      genres: formData.genres || []
     }
 
     setCards([...cards, newCard])
@@ -135,7 +170,10 @@ export default function HeroCarouselManagement() {
       link: '',
       buttonText: 'Learn More',
       isActive: true,
-      tags: []
+      tags: [],
+      isWritingChallenge: false,
+      byWho: '',
+      genres: []
     })
     setIsAddingNew(false)
     toast.success('Card added successfully')
@@ -165,7 +203,10 @@ export default function HeroCarouselManagement() {
       link: '',
       buttonText: 'Learn More',
       isActive: true,
-      tags: []
+      tags: [],
+      isWritingChallenge: false,
+      byWho: '',
+      genres: []
     })
     toast.success('Card updated successfully')
   }
@@ -279,7 +320,10 @@ export default function HeroCarouselManagement() {
       link: '',
       buttonText: 'Learn More',
       isActive: true,
-      tags: []
+      tags: [],
+      isWritingChallenge: false,
+      byWho: '',
+      genres: []
     })
     setTagInput('')
     setEditingCard(null)
@@ -296,7 +340,7 @@ export default function HeroCarouselManagement() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1A1A1A] to-[#2A2A2A]">
-      <Toaster position="top-right" />
+      <Toaster position="bottom-center" />
       
       {/* Header */}
       <div className="bg-gradient-to-r from-[#232120] to-[#2A2827] border-b border-[#333] sticky top-0 z-50 shadow-lg">
@@ -324,10 +368,13 @@ export default function HeroCarouselManagement() {
               <Button
                 onClick={saveCards}
                 disabled={saving}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className={`${hasUnsavedChanges ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700'} text-white relative`}
               >
+                {hasUnsavedChanges && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                )}
                 <Save className="w-4 h-4 mr-2" />
-                {saving ? 'Saving...' : 'Save All'}
+                {saving ? 'Saving...' : hasUnsavedChanges ? 'Save Changes' : 'Save All'}
               </Button>
             </div>
           </div>
@@ -335,6 +382,19 @@ export default function HeroCarouselManagement() {
       </div>
 
       <div className="container mx-auto px-6 py-8">
+        {/* Unsaved Changes Warning */}
+        {hasUnsavedChanges && (
+          <div className="mb-6 bg-yellow-900/20 border border-yellow-600 rounded-lg p-4">
+            <div className="flex items-center gap-2 text-yellow-400">
+              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+              <span className="font-medium">Unsaved Changes</span>
+            </div>
+            <p className="text-yellow-300 text-sm mt-1">
+              You have unsaved changes. Don't forget to save your work!
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Form Section */}
           <div className="lg:col-span-1">
@@ -530,6 +590,86 @@ export default function HeroCarouselManagement() {
                       />
                     </div>
 
+                    <div>
+                      <Label htmlFor="byWho" className="text-gray-300">By Who</Label>
+                      <Input
+                        id="byWho"
+                        value={formData.byWho || ''}
+                        onChange={(e) => setFormData({ ...formData, byWho: e.target.value })}
+                        className="bg-[#2A2827] border-[#444] text-white"
+                        placeholder="Enter author/creator name"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-gray-300">Genres</Label>
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto bg-[#2A2827] border border-[#444] rounded-md p-3">
+                          {genres.map((genre) => (
+                            <div key={genre} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`genre-${genre}`}
+                                checked={formData.genres?.includes(genre) || false}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setFormData({
+                                      ...formData,
+                                      genres: [...(formData.genres || []), genre]
+                                    })
+                                  } else {
+                                    setFormData({
+                                      ...formData,
+                                      genres: formData.genres?.filter(g => g !== genre) || []
+                                    })
+                                  }
+                                }}
+                                className="border-[#666] data-[state=checked]:bg-[#F1592A] data-[state=checked]:border-[#F1592A]"
+                              />
+                              <Label
+                                htmlFor={`genre-${genre}`}
+                                className="text-sm text-gray-300 cursor-pointer"
+                              >
+                                {genre}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Display selected genres */}
+                        {formData.genres && formData.genres.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {formData.genres.map((genre, index) => (
+                              <span
+                                key={index}
+                                className="bg-[#F1592A] text-white text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1"
+                              >
+                                {genre}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newGenres = formData.genres?.filter(g => g !== genre)
+                                    setFormData({ ...formData, genres: newGenres })
+                                  }}
+                                  className="text-white hover:text-gray-200"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="isWritingChallenge"
+                        checked={formData.isWritingChallenge ?? false}
+                        onCheckedChange={(checked) => setFormData({ ...formData, isWritingChallenge: checked })}
+                      />
+                      <Label htmlFor="isWritingChallenge" className="text-gray-300">Writing Challenge</Label>
+                    </div>
+
                     <div className="flex items-center space-x-2">
                       <Switch
                         id="isActive"
@@ -547,6 +687,120 @@ export default function HeroCarouselManagement() {
                       >
                         {editingCard ? 'Update Card' : 'Add Card'}
                       </Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="border-[#444] text-gray-300 hover:bg-[#333]"
+                            disabled={!formData.title && !formData.content && !formData.image}
+                          >
+                            <Monitor className="w-4 h-4 mr-2" />
+                            Preview
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl bg-gradient-to-br from-[#232120] to-[#2A2827] border-[#333] text-white">
+                          <DialogHeader>
+                            <DialogTitle className="text-xl text-white">Card Preview</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="relative bg-gray-800 rounded-lg overflow-hidden h-80">
+                              {/* Preview Image */}
+                              {formData.image && (
+                                <div className="absolute inset-0">
+                                  <Image
+                                    src={formData.image}
+                                    alt="Preview"
+                                    fill
+                                    className="object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
+                                </div>
+                              )}
+                              
+                              {/* Writing Challenge Badge */}
+                              {formData.isWritingChallenge && (
+                                <div className="absolute top-0 right-0 z-20">
+                                  <div className="relative">
+                                    <div className="absolute left-0 top-0 w-0 h-0 border-r-[12px] border-r-[#F1592A] border-t-[16px] border-t-transparent border-b-[16px] border-b-transparent transform -translate-x-full"></div>
+                                    <span className="bg-[#F1592A] text-white text-xs font-bold pl-6 pr-3 py-2 uppercase tracking-wide shadow-lg inline-block">
+                                      Writing Challenge
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Content */}
+                              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                                                                 {/* Tags */}
+                                 {formData.tags && formData.tags.length > 0 && (
+                                   <div className="flex flex-row mb-2 gap-2">
+                                     {formData.tags.map((tag, index) => (
+                                       <span
+                                         key={index}
+                                         className="bg-transparent text-white text-xs font-medium px-3 py-1 uppercase tracking-wide border border-white rounded"
+                                       >
+                                         {tag}
+                                       </span>
+                                     ))}
+                                   </div>
+                                 )}
+
+                                                                 {/* Title */}
+                                 <h3 className="text-2xl md:text-3xl font-bold mb-1 leading-tight">
+                                   {formData.title || 'Card Title'}
+                                 </h3>
+
+                                 {/* Genres */}
+                                 {formData.genres && formData.genres.length > 0 && (
+                                   <div className="flex flex-row mb-2 overflow-hidden">
+                                     {formData.genres.map((genre, index) => (
+                                       <span
+                                         key={index}
+                                         className={`bg-transparent text-white text-xs font-medium px-2 py-0.5 uppercase tracking-wide border-t border-b border-r border-white ${
+                                           index === 0 ? 'border-l border-white rounded-l' : 'border-l border-white'
+                                         } ${index === (formData.genres?.length ?? 0) - 1 ? 'rounded-r' : ''}`}
+                                       >
+                                         {genre}
+                                       </span>
+                                     ))}
+                                   </div>
+                                 )}
+
+                                 {/* Content */}
+                                 <p className="text-sm md:text-base text-gray-200 mb-4 whitespace-pre-line" style={{ lineHeight: '1.1' }}>
+                                   {formData.content || 'Card content will appear here...'}
+                                 </p>
+
+                                {/* By Who */}
+                                {formData.byWho && (
+                                  <div className="mb-3">
+                                    <span className="text-sm text-gray-300">by {formData.byWho}</span>
+                                  </div>
+                                )}
+
+                                {/* Button */}
+                                <div className="flex justify-start">
+                                  <span className="bg-[#F1592A] hover:bg-[#E44D1F] text-white px-4 py-2 rounded-full font-medium text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg inline-flex items-center">
+                                    {formData.buttonText || 'Learn More'}
+                                    <svg className="ml-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="text-sm text-gray-400 bg-[#2A2827] rounded-lg p-4">
+                              <p className="font-medium mb-2">Preview Notes:</p>
+                              <ul className="space-y-1 text-xs">
+                                <li>• This preview shows the actual size and styling of your hero card</li>
+                                <li>• The card will appear in the carousel with smooth animations</li>
+                                <li>• All interactive elements will be functional in the live version</li>
+                              </ul>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                       <Button
                         onClick={resetForm}
                         variant="outline"
@@ -645,7 +899,24 @@ export default function HeroCarouselManagement() {
                                 <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                                   <span>Button: {card.buttonText}</span>
                                   <span>Link: {card.link}</span>
+                                  {card.byWho && <span>By: {card.byWho}</span>}
+                                  {card.isWritingChallenge && <span className="text-[#F1592A]">Writing Challenge</span>}
                                 </div>
+                                {card.genres && card.genres.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-2">
+                                    {card.genres.slice(0, 3).map((genre, index) => (
+                                      <span
+                                        key={index}
+                                        className="bg-[#F1592A] text-white text-xs px-2 py-1 rounded-full"
+                                      >
+                                        {genre}
+                                      </span>
+                                    ))}
+                                    {card.genres.length > 3 && (
+                                      <span className="text-xs text-gray-400">+{card.genres.length - 3} more</span>
+                                    )}
+                                  </div>
+                                )}
                               </div>
 
                               <div className="flex items-center gap-2 ml-4">
@@ -657,6 +928,120 @@ export default function HeroCarouselManagement() {
                                 >
                                   {card.isActive ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                                 </Button>
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="p-2 text-purple-400 hover:text-purple-300"
+                                    >
+                                      <Monitor className="w-4 h-4" />
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-4xl bg-gradient-to-br from-[#232120] to-[#2A2827] border-[#333] text-white">
+                                    <DialogHeader>
+                                      <DialogTitle className="text-xl text-white">Card Preview - {card.title}</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                      <div className="relative bg-gray-800 rounded-lg overflow-hidden h-80">
+                                        {/* Preview Image */}
+                                        {card.image && (
+                                          <div className="absolute inset-0">
+                                            <Image
+                                              src={card.image}
+                                              alt="Preview"
+                                              fill
+                                              className="object-cover"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
+                                          </div>
+                                        )}
+                                        
+                                        {/* Writing Challenge Badge */}
+                                        {card.isWritingChallenge && (
+                                          <div className="absolute top-0 right-0 z-20">
+                                            <div className="relative">
+                                              <div className="absolute left-0 top-0 w-0 h-0 border-r-[12px] border-r-[#F1592A] border-t-[16px] border-t-transparent border-b-[16px] border-b-transparent transform -translate-x-full"></div>
+                                              <span className="bg-[#F1592A] text-white text-xs font-bold pl-6 pr-3 py-2 uppercase tracking-wide shadow-lg inline-block">
+                                                Writing Challenge
+                                              </span>
+                                            </div>
+                                          </div>
+                                        )}
+
+                                        {/* Content */}
+                                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                                                                                     {/* Tags */}
+                                           {card.tags && card.tags.length > 0 && (
+                                             <div className="flex flex-row mb-2 gap-2">
+                                               {card.tags.map((tag, index) => (
+                                                 <span
+                                                   key={index}
+                                                   className="bg-transparent text-white text-xs font-medium px-3 py-1 uppercase tracking-wide border border-white rounded"
+                                                 >
+                                                   {tag}
+                                                 </span>
+                                               ))}
+                                             </div>
+                                           )}
+
+                                                                                     {/* Title */}
+                                           <h3 className="text-2xl md:text-3xl font-bold mb-1 leading-tight">
+                                             {card.title}
+                                           </h3>
+
+                                           {/* Genres */}
+                                           {card.genres && card.genres.length > 0 && (
+                                             <div className="flex flex-row mb-2 overflow-hidden">
+                                               {card.genres.map((genre, index) => (
+                                                 <span
+                                                   key={index}
+                                                   className={`bg-transparent text-white text-xs font-medium px-2 py-0.5 uppercase tracking-wide border-t border-b border-r border-white ${
+                                                     index === 0 ? 'border-l border-white rounded-l' : 'border-l border-white'
+                                                   } ${index === (card.genres?.length ?? 0) - 1 ? 'rounded-r' : ''}`}
+                                                 >
+                                                   {genre}
+                                                 </span>
+                                               ))}
+                                             </div>
+                                           )}
+
+                                           {/* Content */}
+                                           <p className="text-sm md:text-base text-gray-200 mb-4 whitespace-pre-line" style={{ lineHeight: '1.1' }}>
+                                             {card.content}
+                                           </p>
+
+                                          {/* By Who */}
+                                          {card.byWho && (
+                                            <div className="mb-3">
+                                              <span className="text-sm text-gray-300">by {card.byWho}</span>
+                                            </div>
+                                          )}
+
+                                          {/* Button */}
+                                          <div className="flex justify-start">
+                                            <span className="bg-[#F1592A] hover:bg-[#E44D1F] text-white px-4 py-2 rounded-full font-medium text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg inline-flex items-center">
+                                              {card.buttonText}
+                                              <svg className="ml-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                              </svg>
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="text-sm text-gray-400 bg-[#2A2827] rounded-lg p-4">
+                                        <p className="font-medium mb-2">Preview Notes:</p>
+                                        <ul className="space-y-1 text-xs">
+                                          <li>• This preview shows the actual size and styling of your hero card</li>
+                                          <li>• The card will appear in the carousel with smooth animations</li>
+                                          <li>• All interactive elements will be functional in the live version</li>
+                                          <li>• Status: {card.isActive ? 'Active' : 'Inactive'}</li>
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
                                 <Button
                                   onClick={() => handleEditCard(card)}
                                   variant="ghost"

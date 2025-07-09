@@ -18,6 +18,9 @@ interface HeroCard {
   buttonText?: string
   isActive: boolean
   tags?: string[]
+  isWritingChallenge: boolean
+  byWho: string
+  genres: string[]
 }
 
 interface HeroCarouselProps {
@@ -200,6 +203,26 @@ export default function HeroCarousel({ loading = false }: HeroCarouselProps) {
                   <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
                 </motion.div>
 
+                {/* Writing Challenge Badge - Top Right */}
+                {cards[currentSlide]?.isWritingChallenge && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.1, duration: 0.6, ease: "easeOut" }}
+                    className="absolute top-0 right-0 z-20"
+                  >
+                    <div className="relative">
+                      {/* Left chevron cut */}
+                      <div className="absolute left-0 top-0 w-0 h-0 border-r-[12px] border-r-[#F1592A] border-t-[16px] border-t-transparent border-b-[16px] border-b-transparent transform -translate-x-full"></div>
+                      
+                      {/* Main banner body - attached to corner */}
+                      <span className="bg-[#F1592A] text-white text-xs font-bold pl-6 pr-3 py-2 uppercase tracking-wide shadow-lg inline-block">
+                        Writing Challenge
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
+
                 {/* Content - Bottom Aligned */}
                 <div className="relative z-10 h-full flex items-end">
                   <div className="w-full px-6 md:px-8 pb-6 md:pb-8">
@@ -209,22 +232,12 @@ export default function HeroCarousel({ loading = false }: HeroCarouselProps) {
                         initial={{ opacity: 0, y: 50, x: 30 }}
                         animate={{ opacity: 1, y: 0, x: 0 }}
                         transition={{ delay: 0.1, duration: 0.6, ease: "easeOut" }}
-                        className="flex flex-row mb-1 overflow-hidden"
+                        className="flex flex-row mb-1 gap-2"
                       >
                         {cards[currentSlide].tags.map((tag, index) => (
                           <span
                             key={index}
-                            className={
-                              `bg-transparent text-white text-xs font-medium px-3 py-1 uppercase tracking-wide border-t border-b border-r border-white ${
-                                index === 0
-                                  ? 'border-l border-white rounded-l'
-                                  : 'border-l border-white'
-                              } ${
-                                index === ((cards[currentSlide].tags?.length ?? 0) - 1)
-                                  ? 'rounded-r'
-                                  : ''
-                              }`
-                            }
+                            className="bg-transparent text-white text-xs font-medium px-3 py-1 uppercase tracking-wide border border-white rounded"
                           >
                             {tag}
                           </span>
@@ -236,10 +249,39 @@ export default function HeroCarousel({ loading = false }: HeroCarouselProps) {
                       initial={{ opacity: 0, y: 50, x: 30 }}
                       animate={{ opacity: 1, y: 0, x: 0 }}
                       transition={{ delay: 0.3, duration: 0.6, ease: "easeOut" }}
-                      className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-3 leading-tight"
+                      className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-1 leading-tight"
                     >
                       {cards[currentSlide]?.title}
                     </motion.h1>
+
+                    {/* Genres */}
+                    {cards[currentSlide]?.genres && cards[currentSlide].genres.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 50, x: 30 }}
+                        animate={{ opacity: 1, y: 0, x: 0 }}
+                        transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
+                        className="flex flex-row mb-2 overflow-hidden"
+                      >
+                        {cards[currentSlide].genres.map((genre, index) => (
+                          <span
+                            key={index}
+                            className={
+                              `bg-transparent text-white text-xs font-medium px-2 py-0.5 uppercase tracking-wide border-t border-b border-r border-white ${
+                                index === 0
+                                  ? 'border-l border-white rounded-l'
+                                  : 'border-l border-white'
+                              } ${
+                                index === ((cards[currentSlide].genres?.length ?? 0) - 1)
+                                  ? 'rounded-r'
+                                  : ''
+                              }`
+                            }
+                          >
+                            {genre}
+                          </span>
+                        ))}
+                      </motion.div>
+                    )}
                     
                     <motion.p
                       initial={{ opacity: 0, y: 50, x: 30 }}
@@ -250,6 +292,18 @@ export default function HeroCarousel({ loading = false }: HeroCarouselProps) {
                     >
                       {cards[currentSlide]?.content}
                     </motion.p>
+
+                    {/* By Who */}
+                    {cards[currentSlide]?.byWho && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 50, x: 30 }}
+                        animate={{ opacity: 1, y: 0, x: 0 }}
+                        transition={{ delay: 0.6, duration: 0.6, ease: "easeOut" }}
+                        className="mb-3"
+                      >
+                        <span className="text-sm text-gray-300">by {cards[currentSlide].byWho}</span>
+                      </motion.div>
+                    )}
 
                     {cards[currentSlide]?.link && (
                       <motion.div
@@ -279,7 +333,7 @@ export default function HeroCarousel({ loading = false }: HeroCarouselProps) {
 
             {/* Slide Counter - Bottom Right */}
             {cards.length > 1 && (
-              <div className="absolute bottom-3 right-3 z-20 bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 flex items-center min-w-[32px] h-6">
+              <div className="absolute bottom-3 right-3 z-20 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 flex items-center min-w-[34px] h-5">
                 <span className="text-white text-xs font-bold mr-0.5">
                   {currentSlide + 1}
                 </span>
