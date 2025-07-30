@@ -641,7 +641,7 @@ const renderPosts = (section: string) => {
                 {/* Left Content Area */}
                 <div className="flex-1 relative">
                   {/* Desktop Floating User Details Box - Left side, vertically centered, smaller */}
-                  <div className="hidden sm:block absolute top-1/2 -left-4 sm:-left-12 transform -translate-y-1/2 z-20">
+                  <div className="hidden sm:block absolute top-1/2 left-0 sm:-left-2 lg:-left-4 transform -translate-y-1/2 z-20">
                     <div className="bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 
                       dark:from-slate-800/60 dark:via-slate-700/50 dark:to-slate-800/60
                       backdrop-blur-xl rounded-xl p-2 shadow-2xl min-w-[90px] sm:min-w-[120px]
@@ -688,7 +688,7 @@ const renderPosts = (section: string) => {
                   </div>
 
                   {/* Content with left margin for floating box on desktop only */}
-                  <div className="ml-0 sm:ml-0 lg:ml-24 pt-0 h-full flex flex-col justify-between">
+                  <div className="ml-0 sm:ml-20 lg:ml-28 pt-0 h-full flex flex-col justify-between">
                     <div>
                       <Link href={`/forum/post/${post.id}?tab=${section}&page=1`}>
                         <div className="flex items-center gap-2 mb-1">
@@ -1434,7 +1434,7 @@ return (
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 container max-w-none mx-auto px-[18px] lg:pr-[336px] py-[18px] lg:border-l lg:border-[#F1592A]/20">
+          <div className="flex-1 container max-w-none mx-auto px-[18px] sm:px-[32px] lg:pr-[336px] py-[18px] lg:border-l lg:border-[#F1592A]/20">
             <div className="max-w-none space-y-3">
               {/* Header Section */}
               <div className="relative">
@@ -1656,30 +1656,30 @@ return (
                     </Dialog>
               )}
 
-                            {/* User Profile Card - Dark style like post content */}
+                            {/* Combined User Profile Card with Stats */}
               {user && userProfile && (
                 <div className="mb-4">
                   <div className="bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 
                     dark:from-slate-800/60 dark:via-slate-700/50 dark:to-slate-800/60
-                    backdrop-blur-xl rounded-xl p-3 shadow-2xl mb-2 w-32 mx-auto
+                    backdrop-blur-xl rounded-xl p-4 shadow-2xl
                     border border-white/10 dark:border-slate-600/20
-                    hover:scale-105 transition-all duration-500 
+                    hover:scale-[1.02] transition-all duration-500 
                     shadow-black/20 hover:shadow-black/30
                     before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-br 
                     before:from-white/10 before:via-white/5 before:to-transparent before:opacity-100
                     after:absolute after:inset-0 after:rounded-xl after:bg-gradient-to-t 
                     after:from-[#F1592A]/10 after:via-transparent after:to-[#F1592A]/5 after:opacity-60 relative">
                     <Link href={`/author/${user.uid}`} className="block group/avatar">
-                      <div className="flex flex-col items-center text-center relative z-10">
-                        <Avatar className="h-12 w-12 ring-2 ring-white/30 dark:ring-slate-300/30 shadow-lg 
-                          hover:ring-[#F1592A]/50 transition-all duration-200 group-hover/avatar:scale-105 mb-2">
+                      <div className="flex flex-col items-center text-center relative z-10 mb-4">
+                        <Avatar className="h-16 w-16 ring-2 ring-white/30 dark:ring-slate-300/30 shadow-lg 
+                          hover:ring-[#F1592A]/50 transition-all duration-200 group-hover/avatar:scale-105 mb-3">
                           <AvatarImage src={userProfile.profilePicture || '/assets/default-avatar.png'} />
-                          <AvatarFallback className="bg-gradient-to-br from-[#F1592A]/80 to-[#D14820]/80 text-white font-bold text-sm">
+                          <AvatarFallback className="bg-gradient-to-br from-[#F1592A]/80 to-[#D14820]/80 text-white font-bold text-lg">
                             {userProfile.username?.[0] || '?'}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-white dark:text-slate-100 font-semibold text-sm leading-tight 
-                          hover:text-[#F1592A] transition-colors duration-200 drop-shadow-sm mb-1">
+                        <span className="text-white dark:text-slate-100 font-semibold text-base leading-tight 
+                          hover:text-[#F1592A] transition-colors duration-200 drop-shadow-sm mb-2">
                           {userProfile.username}
                         </span>
                         
@@ -1689,32 +1689,36 @@ return (
                           const RoleIcon = roleBadge.icon
                           
                           return (
-                            <div className={`flex items-center justify-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-all duration-300 ${roleBadge.className}`}>
-                              <RoleIcon className="h-3 w-3" />
+                            <div className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${roleBadge.className}`}>
+                              <RoleIcon className="h-3.5 w-3.5" />
                               <span>{roleBadge.text}</span>
                             </div>
                           )
                         })()}
                       </div>
                     </Link>
-                  </div>
-                  
-                  {/* Stats outside the box */}
-                  <div className="flex items-center justify-between px-2">
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-[#232120] dark:text-[#E7E7E8]">
-                        {posts.filter(post => post.authorId === user.uid).length}
-                      </div>
-                      <div className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3] uppercase tracking-wide">
-                        Posts
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-[#232120] dark:text-[#E7E7E8]">
-                        {posts.filter(post => post.authorId === user.uid).reduce((sum, post) => sum + post.repliesCount, 0)}
-                      </div>
-                      <div className="text-xs text-[#8E8F8E] dark:text-[#C3C3C3] uppercase tracking-wide">
-                        Replies
+                    
+                    {/* Stats inside the box with divider */}
+                    <div className="relative z-10">
+                      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-4"></div>
+                      <div className="flex items-center justify-around">
+                        <div className="text-center">
+                          <div className="text-xl font-bold text-white dark:text-slate-100 mb-1">
+                            {posts.filter(post => post.authorId === user.uid).length}
+                          </div>
+                          <div className="text-xs text-white/70 dark:text-slate-300/70 uppercase tracking-wide font-medium">
+                            Posts
+                          </div>
+                        </div>
+                        <div className="w-px h-8 bg-white/20"></div>
+                        <div className="text-center">
+                          <div className="text-xl font-bold text-white dark:text-slate-100 mb-1">
+                            {posts.filter(post => post.authorId === user.uid).reduce((sum, post) => sum + post.repliesCount, 0)}
+                          </div>
+                          <div className="text-xs text-white/70 dark:text-slate-300/70 uppercase tracking-wide font-medium">
+                            Replies
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1726,9 +1730,9 @@ return (
                 <h3 className="text-sm font-bold text-[#232120] dark:text-[#E7E7E8] uppercase tracking-wider">
                   Recent Posts
                 </h3>
-                <button className="text-xs text-[#F1592A] hover:text-[#D14820] font-medium">
+                {/* <button className="text-xs text-[#F1592A] hover:text-[#D14820] font-medium">
                   Clear
-                </button>
+                </button> */}
               </div>
 
               {/* Recent Posts List */}

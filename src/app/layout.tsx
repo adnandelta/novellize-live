@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Ubuntu } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from './authcontext'
 import { ThemeProvider } from 'next-themes'
@@ -26,6 +27,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3362441131664284"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
+      </head>
       <body className={`${ubuntu.variable} antialiased`}>
         <ThemeProvider
           attribute="class"

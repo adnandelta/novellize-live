@@ -1398,27 +1398,42 @@ export default function ModernLightNovelsHomepage() {
           </main>
 
           <footer className="border-t py-1 bg-white dark:bg-[#232120] dark:border-[#3E3F3E]">
-            <div className="container mx-auto px-4 md:flex md:items-center md:justify-between">
+            <div className="container mx-auto px-4">
+              {/* Marketing Disclaimer */}
               <motion.div 
-                className="text-center md:text-left mb-4 md:mb-0"
+                className="text-center py-4 border-b border-gray-200 dark:border-[#3E3F3E] mb-4"
                 variants={fadeIn}
               >
-                <p className="text-sm text-[#464646] dark:text-[#C3C3C3]">
-                  © 2024 Novellize. All rights reserved.
+                <p className="text-sm text-[#464646] dark:text-[#C3C3C3] max-w-4xl mx-auto">
+                  <strong>Please Note:</strong> All content displayed on this website is for promotional and marketing purposes only. 
+                  Authors and content creators interested in accessing our publishing portal to manage, edit, or upload their works 
+                  should reach out to us directly. We provide comprehensive tools and administrative capabilities for verified authors 
+                  to control their content and engage with their readership.
                 </p>
               </motion.div>
-              <motion.nav 
-                className="flex justify-center md:justify-end space-x-4 md:space-x-6"
-                variants={staggerChildren}
-              >
-                {["About Us", "Terms", "Privacy", "Contact"].map((item) => (
-                  <motion.div key={item} variants={fadeIn}>
-                    <Link href={`/${item.toLowerCase().replace(' ', '-')}`} className="text-sm text-[#464646] hover:text-[#232120] dark:text-[#C3C3C3] dark:hover:text-[#E7E7E8] transition-colors duration-200">
-                      {item}
-                    </Link>
-                  </motion.div>
-                ))}
-              </motion.nav>
+
+              <div className="md:flex md:items-center md:justify-between">
+                <motion.div 
+                  className="text-center md:text-left mb-4 md:mb-0"
+                  variants={fadeIn}
+                >
+                  <p className="text-sm text-[#464646] dark:text-[#C3C3C3]">
+                    © 2024 Novellize. All rights reserved.
+                  </p>
+                </motion.div>
+                <motion.nav 
+                  className="flex justify-center md:justify-end space-x-4 md:space-x-6"
+                  variants={staggerChildren}
+                >
+                  {["About Us", "Terms", "Privacy", "Contact"].map((item) => (
+                    <motion.div key={item} variants={fadeIn}>
+                      <Link href={`/${item.toLowerCase().replace(' ', '-')}`} className="text-sm text-[#464646] hover:text-[#232120] dark:text-[#C3C3C3] dark:hover:text-[#E7E7E8] transition-colors duration-200">
+                        {item}
+                      </Link>
+                    </motion.div>
+                  ))}
+                </motion.nav>
+              </div>
             </div>
           </footer>
         </>

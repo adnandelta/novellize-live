@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Search, Moon, Sun, LogOut, User, Home, MessageSquare, ChevronDown, ChevronUp, ChevronLeft, ChevronsLeftRight, Flame, BookOpen, Crown, Sparkles, Menu, X, Library, Trash2 } from "lucide-react"
+import { Search, Moon, Sun, LogOut, User, Home, MessageSquare, ChevronDown, ChevronUp, ChevronLeft, ChevronsLeftRight, Flame, BookOpen, Crown, Sparkles, Menu, X, Library, Trash2, Star } from "lucide-react"
 import { GiQuillInk } from "react-icons/gi"
 import Link from "next/link"
 import Image from 'next/image'
@@ -32,6 +32,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import ReactMarkdown from 'react-markdown'
 import remarkBreaks from 'remark-breaks'
 import { Badge } from "@/components/ui/badge"
@@ -256,11 +262,23 @@ const getProfileRoute = (authorId: string, userType: string) => {
   return `/user_profile?userId=${authorId}`
 }
 
+// Generate random avatar URL using DiceBear API
+const generateRandomAvatar = (seed: string) => {
+  const styles = ['avataaars', 'bottts', 'identicon', 'initials', 'micah', 'personas']
+  const style = styles[Math.abs(seed.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % styles.length]
+  return `https://api.dicebear.com/7.x/${style}/svg?seed=${encodeURIComponent(seed)}&backgroundColor=F1592A,E44D1F,D14820&size=64`
+}
+
+// Check if user should get a star badge (now shows for all users)
+const shouldShowStarBadge = (userProfile: any) => {
+  return true // Show star for all users
+}
+
 const ReplyComponent = ({ reply, allReplies, onReply, userProfiles, currentUser, currentUserType, onDeleteReply, depth = 0 }: { 
   reply: Reply, 
   allReplies: Reply[], 
   onReply: (parentReplyId: string, content: string) => void, 
-  userProfiles: {[key: string]: {profilePicture: string, username: string, userType: string}},
+  userProfiles: {[key: string]: {profilePicture: string, username: string, userType: string, createdAt?: any}},
   currentUser: any,
   currentUserType: string,
   onDeleteReply: (replyId: string) => void,
@@ -272,7 +290,12 @@ const ReplyComponent = ({ reply, allReplies, onReply, userProfiles, currentUser,
   const { user } = useAuth()
 
   const nestedReplies = allReplies.filter(r => r.parentId === reply.id)
-  const userProfile = userProfiles[reply.authorId] || { profilePicture: '/assets/default-avatar.png', username: reply.author, userType: 'reader' }
+  const userProfile = userProfiles[reply.authorId] || { 
+    profilePicture: generateRandomAvatar(reply.author || reply.authorId), 
+    username: reply.author, 
+    userType: 'reader',
+    createdAt: null 
+  }
 
   const handleReply = () => {
     if (!user) {
@@ -329,11 +352,23 @@ const ReplyComponent = ({ reply, allReplies, onReply, userProfiles, currentUser,
           <div className="flex-1 min-w-0">
             {/* Header */}
             <div className="flex items-center gap-2 mb-1">
-              <Link href={getProfileRoute(reply.authorId, userProfile.userType)} className="hover:text-[#F1592A] transition-colors duration-150">
-                <span className="font-medium text-sm text-[#232120] dark:text-[#E7E7E8] hover:text-[#F1592A] transition-colors duration-150 cursor-pointer">
-                  {userProfile.username}
-                </span>
-              </Link>
+              <div className="flex items-center gap-1">
+                <Link href={getProfileRoute(reply.authorId, userProfile.userType)} className="hover:text-[#F1592A] transition-colors duration-150">
+                  <span className="font-medium text-sm text-[#232120] dark:text-[#E7E7E8] hover:text-[#F1592A] transition-colors duration-150 cursor-pointer">
+                    {userProfile.username}
+                  </span>
+                </Link>
+                {shouldShowStarBadge(userProfile) && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Star className="h-3 w-3 text-purple-500 fill-purple-500 drop-shadow-[0_0_6px_rgba(168,85,247,0.8)] hover:drop-shadow-[0_0_10px_rgba(168,85,247,1)] transition-all duration-300 animate-pulse" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-xs">Member of Novellize</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
               <div className="flex items-center gap-1 text-xs text-[#8E8F8E] dark:text-[#C3C3C3]">
                 <span>
                   {(() => {
@@ -491,7 +526,7 @@ export default function PostPage({ params }: { params: { postId: string } }) {
   const [sortBy, setSortBy] = useState('New')
   const [searchQuery, setSearchQuery] = useState('')
   const [allReplies, setAllReplies] = useState<Reply[]>([])
-  const [userProfiles, setUserProfiles] = useState<{[key: string]: {profilePicture: string, username: string, userType: string}}>({})
+  const [userProfiles, setUserProfiles] = useState<{[key: string]: {profilePicture: string, username: string, userType: string, createdAt?: any}}>({})
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [deleteConfirmReply, setDeleteConfirmReply] = useState<string | null>(null)
   const [userType, setUserType] = useState<string>('')
@@ -527,12 +562,18 @@ export default function PostPage({ params }: { params: { postId: string } }) {
           if (userDoc.exists()) {
             const userData = userDoc.data()
             return [authorId, {
-              profilePicture: userData.profilePicture || '/assets/default-avatar.png',
+              profilePicture: userData.profilePicture || generateRandomAvatar(userData.username || authorId),
               username: userData.username || 'Anonymous',
-              userType: userData.userType || 'reader'
+              userType: userData.userType || 'reader',
+              createdAt: userData.createdAt
             }]
           }
-          return [authorId, { profilePicture: '/assets/default-avatar.png', username: 'Anonymous', userType: 'reader' }]
+          return [authorId, { 
+            profilePicture: generateRandomAvatar(authorId), 
+            username: 'Anonymous', 
+            userType: 'reader',
+            createdAt: null 
+          }]
         })
         const userProfilesArray = await Promise.all(userProfilesPromises)
         setUserProfiles(Object.fromEntries(userProfilesArray))
@@ -694,9 +735,10 @@ export default function PostPage({ params }: { params: { postId: string } }) {
   if (!mounted) return null
 
   return (
-    <div className="relative isolate min-h-screen bg-gradient-to-b from-[#F8F8F8] to-white 
-      dark:from-[#1A1918] dark:to-[#232120] text-[#232120] dark:text-[#E7E7E8]">
-      <Toaster position="top-center" reverseOrder={false} />
+    <TooltipProvider>
+      <div className="relative isolate min-h-screen bg-gradient-to-b from-[#F8F8F8] to-white 
+        dark:from-[#1A1918] dark:to-[#232120] text-[#232120] dark:text-[#E7E7E8]">
+        <Toaster position="top-center" reverseOrder={false} />
       <AnimatedPattern />
       
       <motion.div 
@@ -1069,18 +1111,30 @@ export default function PostPage({ params }: { params: { postId: string } }) {
                       <div className="relative z-10">
                         <Link href={getProfileRoute(post.authorId, userProfiles[post.authorId]?.userType || 'reader')} className="group/avatar">
                           <Avatar className="h-16 w-16 mx-auto mb-3 ring-4 ring-slate-600/50 shadow-xl hover:ring-[#F1592A]/50 transition-all duration-300 group-hover/avatar:scale-105">
-                            <AvatarImage src={userProfiles[post.authorId]?.profilePicture || '/assets/default-avatar.png'} alt={post.author} />
+                            <AvatarImage src={userProfiles[post.authorId]?.profilePicture || generateRandomAvatar(post.author || post.authorId)} alt={post.author} />
                             <AvatarFallback className="bg-gradient-to-br from-[#F1592A] to-[#D14820] text-white text-lg font-bold">
                               {post.author[0]}
                             </AvatarFallback>
                           </Avatar>
                         </Link>
                         
-                        <Link href={getProfileRoute(post.authorId, userProfiles[post.authorId]?.userType || 'reader')} className="hover:text-[#F1592A] transition-colors duration-200">
-                          <h3 className="font-bold text-base text-white mb-2 hover:text-[#F1592A] transition-colors duration-200 cursor-pointer">
-                            {post.author}
-                          </h3>
-                        </Link>
+                        <div className="flex items-center justify-center gap-1 mb-2">
+                          <Link href={getProfileRoute(post.authorId, userProfiles[post.authorId]?.userType || 'reader')} className="hover:text-[#F1592A] transition-colors duration-200">
+                            <h3 className="font-bold text-base text-white hover:text-[#F1592A] transition-colors duration-200 cursor-pointer">
+                              {post.author}
+                            </h3>
+                          </Link>
+                          {shouldShowStarBadge(userProfiles[post.authorId]) && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Star className="h-4 w-4 text-purple-500 fill-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)] hover:drop-shadow-[0_0_12px_rgba(168,85,247,1)] transition-all duration-300 animate-pulse" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-xs">Member of Novellize</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
                         
                         {/* User Role Badge */}
                         {(() => {
@@ -1376,5 +1430,6 @@ export default function PostPage({ params }: { params: { postId: string } }) {
         </Dialog>
       </motion.div>
     </div>
+    </TooltipProvider>
   )
 }
